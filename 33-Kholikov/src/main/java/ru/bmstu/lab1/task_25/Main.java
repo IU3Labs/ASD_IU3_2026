@@ -8,7 +8,7 @@ public final class Main {
     private Main() {
     }
 
-    /** Читает условие задачи из System.in и выводит ответ в System.out. */
+    /** Читает массив и выводит сумму его элементов. */
     public static void main(String[] args) {
         try (Scanner scanner = new Scanner(System.in)) {
             int[] numbers = ArrayIo.readArray(scanner);
@@ -24,5 +24,4 @@ public final class Main {
         }
         return result;
     }
-
 }
