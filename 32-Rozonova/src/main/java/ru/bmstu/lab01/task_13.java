@@ -36,3 +36,30 @@ public class Task13SelectionSort {
             }
         }
     }
+
+    /**
+     * Main method for standard input/output execution.
+     *
+     * @param args command line arguments
+     */
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        if (!scanner.hasNextInt()) {
+            return;
+        }
+
+        int n = scanner.nextInt();
+        int[] array = new int[n];
+        for (int i = 0; i < n; i++) {
+            array[i] = scanner.nextInt();
+        }
+
+        selectionSort(array);
+
+        // Print the sorted array separated by spaces
+        for (int i = 0; i < n; i++) {
+            System.out.print(array[i] + (i == n - 1 ? "" : " "));
+        }
+        System.println();
+    }
+}
