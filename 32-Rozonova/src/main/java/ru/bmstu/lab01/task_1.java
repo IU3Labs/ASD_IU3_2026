@@ -56,3 +56,25 @@ public class Task1MaxMin {
 
         return new Result(min, max);
     }
+
+    /**
+     * Main method for standard input/output execution.
+     *
+     * @param args command line arguments
+     */
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        if (!scanner.hasNextInt()) {
+            return;
+        }
+        
+        int n = scanner.nextInt();
+        int[] array = new int[n];
+        for (int i = 0; i < n; i++) {
+            array[i] = scanner.nextInt();
+        }
+
+        Result result = findMinMax(array);
+        System.out.println("Min: " + result.getMin() + ", Max: " + result.getMax());
+    }
+}
