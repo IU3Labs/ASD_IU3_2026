@@ -29,3 +29,28 @@ public class Task2FirstIndex {
 
         return -1;
     }
+
+    /**
+     * Main method for standard input/output execution.
+     * Expects input: first line contains n and target x, second line contains n integers.
+     *
+     * @param args command line arguments
+     */
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        if (!scanner.hasNextInt()) {
+            return;
+        }
+
+        int n = scanner.nextInt();
+        int target = scanner.nextInt();
+
+        int[] array = new int[n];
+        for (int i = 0; i < n; i++) {
+            array[i] = scanner.nextInt();
+        }
+
+        int index = findFirstIndex(array, target);
+        System.out.println(index);
+    }
+}
