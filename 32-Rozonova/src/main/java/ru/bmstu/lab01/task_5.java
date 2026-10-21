@@ -15,7 +15,7 @@ public class Task5EvenPositionSum {
      * @param array input array of integers
      * @return sum of elements at even positions
      */
-    
+
     public static long sumEvenPositions(int[] array) {
         if (array == null) {
             return 0;
@@ -27,3 +27,25 @@ public class Task5EvenPositionSum {
         }
         return sum;
     }
+
+    /**
+     * Main method for standard input/output execution.
+     *
+     * @param args command line arguments
+     */
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        if (!scanner.hasNextInt()) {
+            return;
+        }
+
+        int n = scanner.nextInt();
+        int[] array = new int[n];
+        for (int i = 0; i < n; i++) {
+            array[i] = scanner.nextInt();
+        }
+
+        long result = sumEvenPositions(array);
+        System.out.println(result);
+    }
+}
