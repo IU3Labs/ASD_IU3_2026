@@ -1,4 +1,4 @@
-Java
+
 package ru.bmstu.lab1;
 
 import java.util.Scanner;
