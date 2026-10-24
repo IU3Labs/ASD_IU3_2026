@@ -1,0 +1,15 @@
+{
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.project.sourcePaths": [
+        "32-Ridchenko/src/main/java",
+        "32-Ridchenko/src/test/java"
+    ],
+    "java.project.outputPath": "32-Ridchenko/target/classes",
+    
+    "java.compile.nullAnalysis.mode": "automatic",
+"java.errors.incompleteClasspath.severity": "ignore",
+"java.diagnostic.filter": [
+    "**/target/**",
+    "**/src/main/java/ru/bmstu/lab01/task_*/**"
+]
+}
