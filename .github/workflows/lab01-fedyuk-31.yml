@@ -1,0 +1,26 @@
+name: Verify lab01 Fedyuk 31
+
+on:
+  push:
+    branches: [lab01-Fedyuk-31]
+  pull_request:
+    paths:
+      - '31-Fedyuk/**'
+      - 'pom.xml'
+      - '.github/workflows/lab01-fedyuk-31.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Check style, tests and coverage
+        run: mvn --batch-mode --no-transfer-progress -pl 31-Fedyuk clean verify
