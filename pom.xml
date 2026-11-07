@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ru.bmstu</groupId>
     <artifactId>ASD_IU3_2026</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
+
     <modules>
         <module>00-example-module</module>
+        <module>31-Ryzhilo</module>
     </modules>
 
     <properties>
@@ -26,5 +29,25 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.14.1</version>
+                    <configuration>
+                        <release>${maven.compiler.source}</release>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.5.4</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
 </project>
