@@ -42,6 +42,32 @@ public class PriorityQueueCustom<T extends Comparable<? super T>> {
 
         return minimum;
     }
+        /** Удаляет одно вхождение элемента и возвращает true, если он найден. */
+    public boolean remove(T item) {
+        int index = 0;
+        while (index < size && !Objects.equals(elements[index], item)) {
+            index++;
+        }
+        if (index == size) {
+            return false;
+        }
+
+        int lastIndex = --size;
+        elements[index] = elements[lastIndex];
+        elements[lastIndex] = null;
+
+        if (index == lastIndex) {
+            return true;
+        }
+
+        int parent = (index - 1) / 2;
+        if (index > 0 && elementAt(index).compareTo(elementAt(parent)) < 0) {
+            siftUp(index);
+        } else {
+            siftDown(index);
+        }
+        return true;
+    }
 
     /** Возвращает минимум без удаления; для пустой очереди бросает исключение. */
     public T peek() {
