@@ -121,3 +121,56 @@ public class HashMapCustom<K, V> {
             deletedCount--;
         }
     }
+
+    /**
+     * Returns the value to which the specified key is mapped, or null.
+     * Time complexity: O(1) on average
+     */
+    @SuppressWarnings("unchecked")
+    public V get(K key) {
+        if (key == null) {
+            return null;
+        }
+
+        int capacity = table.length;
+        int hash = (key.hashCode() & 0x7fffffff) % capacity;
+        int index = hash;
+
+        for (int i = 0; i < capacity; i++) {
+            Entry<K, V> entry = table[index];
+            if (entry == null) {
+                return null; // Цепочка прервана, элемента нет
+            }
+            if (entry != DELETED && entry.key.equals(key)) {
+                return entry.value;
+            }
+            index = (index + 1) % capacity;
+        }
+        return null;
+    }
+
+    /**
+     * Returns true if this map contains a mapping for the specified key.
+     * Time complexity: O(1) on average
+     */
+    public boolean containsKey(K key) {
+        if (key == null) {
+            return false;
+        }
+
+        int capacity = table.length;
+        int hash = (key.hashCode() & 0x7fffffff) % capacity;
+        int index = hash;
+
+        for (int i = 0; i < capacity; i++) {
+            Entry<K, V> entry = table[index];
+            if (entry == null) {
+                return false;
+            }
+            if (entry != DELETED && entry.key.equals(key)) {
+                return true;
+            }
+            index = (index + 1) % capacity;
+        }
+        return false;
+    }
