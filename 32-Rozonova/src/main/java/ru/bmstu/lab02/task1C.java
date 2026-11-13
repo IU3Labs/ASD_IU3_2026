@@ -46,3 +46,33 @@ public class PriorityQueueWithRemove<T extends Comparable<? super T>> {
         }
         return (T) data[0];
     }
+    /**
+     * Adds an element to the priority queue.
+     * Time complexity: O(log n) amortized
+     */
+    public void add(T item) {
+        if (item == null) {
+            throw new IllegalArgumentException("Null items are not allowed");
+        }
+        ensureCapacity();
+        data[size] = item;
+        siftUp(size);
+        size++;
+    }
+
+    private void siftUp(int index) {
+        while (index > 0) {
+            int parentIndex = (index - 1) / 2;
+            @SuppressWarnings("unchecked")
+            T current = (T) data[index];
+            @SuppressWarnings("unchecked")
+            T parent = (T) data[parentIndex];
+
+            if (current.compareTo(parent) < 0) {
+                swap(index, parentIndex);
+                index = parentIndex;
+            } else {
+                break;
+            }
+        }
+    }
