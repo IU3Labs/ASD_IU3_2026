@@ -79,6 +79,58 @@ public class PriorityQueueWithRemove<T extends Comparable<? super T>> {
         return min;
     }
 
+    /**
+     * Removes the first occurrence of the specified element from this priority queue.
+     * Time complexity: O(n) for linear search + O(log n) for heap restoration = O(n)
+     *
+     * @param item element to be removed
+     * @return true if an element was removed, false otherwise
+     */
+    public boolean remove(T item) {
+        if (item == null || isEmpty()) {
+            return false;
+        }
+
+        int index = -1;
+        for (int i = 0; i < size; i++) {
+            @SuppressWarnings("unchecked")
+            T current = (T) data[i];
+            if (item.equals(current)) {
+                index = i;
+                break;
+            }
+        }
+
+        if (index == -1) {
+            return false; // Element not found
+        }
+
+        // If it's the last element, simply remove it
+        if (index == size - 1) {
+            data[size - 1] = null;
+            size--;
+            return true;
+        }
+
+        // Replace with the last element
+        @SuppressWarnings("unchecked")
+        T lastElement = (T) data[size - 1];
+        data[size - 1] = null;
+        size--;
+
+        data[index] = lastElement;
+
+        // Restore heap property
+        int parentIndex = (index - 1) / 2;
+        if (index > 0 && lastElement.compareTo((T) data[parentIndex]) < 0) {
+            siftUp(index);
+        } else {
+            siftDown(index);
+        }
+
+        return true;
+    }
+
     private void siftUp(int index) {
         while (index > 0) {
             int parentIndex = (index - 1) / 2;
@@ -114,3 +166,28 @@ public class PriorityQueueWithRemove<T extends Comparable<? super T>> {
                     smallestVal = rightVal;
                 }
             }
+
+            @SuppressWarnings("unchecked")
+            T currentVal = (T) data[index];
+            if (currentVal.compareTo(smallestVal) > 0) {
+                swap(index, smallest);
+                index = smallest;
+            } else {
+                break;
+            }
+        }
+    }
+
+    private void swap(int i, int j) {
+        Object temp = data[i];
+        data[i] = data[j];
+        data[j] = temp;
+    }
+
+    private void ensureCapacity() {
+        if (size >= data.length) {
+            int newCapacity = data.length * 2;
+            data = Arrays.copyOf(data, newCapacity);
+        }
+    }
+}
