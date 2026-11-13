@@ -12,3 +12,26 @@ public class PriorityQueueWithRemove<T extends Comparable<? super T>> {
     private static final int DEFAULT_CAPACITY = 10;
     private Object[] data;
     private int size;
+    /**
+     * Constructs an empty priority queue with default initial capacity.
+     */
+    public PriorityQueueWithRemove() {
+        this.data = new Object[DEFAULT_CAPACITY];
+        this.size = 0;
+    }
+
+    /**
+     * Returns the number of elements in this priority queue.
+     * Time complexity: O(1)
+     */
+    public int size() {
+        return size;
+    }
+
+    /**
+     * Returns true if this priority queue contains no elements.
+     * Time complexity: O(1)
+     */
+    public boolean isEmpty() {
+        return size == 0;
+    }
