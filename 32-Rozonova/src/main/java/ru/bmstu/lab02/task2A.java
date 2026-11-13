@@ -31,3 +31,37 @@ public class HashMapCustom<K, V> {
             this.value = value;
         }
     }
+
+    /**
+     * Constructs an empty hash map with default initial capacity.
+     */
+    @SuppressWarnings("unchecked")
+    public HashMapCustom() {
+        this.table = new Entry[DEFAULT_CAPACITY];
+        this.size = 0;
+        this.deletedCount = 0;
+    }
+
+    /**
+     * Returns the number of key-value mappings in this map.
+     * Time complexity: O(1)
+     */
+    public int size() {
+        return size;
+    }
+
+    /**
+     * Returns the current capacity of the internal table.
+     * Time complexity: O(1)
+     */
+    public int capacity() {
+        return table.length;
+    }
+
+    /**
+     * Returns true if this map contains no key-value mappings.
+     * Time complexity: O(1)
+     */
+    public boolean isEmpty() {
+        return size == 0;
+    }
