@@ -68,3 +68,52 @@ class HashMapCustomTest {
 
         assertFalse(map.remove("nonexistent"));
     }
+
+    @Test
+    void should_handle_linear_probing_collisions() {
+        // Принудительно создаем коллизии или заполняем карту
+        for (int i = 0; i < 20; i++) {
+            map.put("key" + i, i);
+        }
+
+        assertEquals(20, map.size());
+        for (int i = 0; i < 20; i++) {
+            assertEquals(i, map.get("key" + i));
+            assertTrue(map.containsKey("key" + i));
+        }
+    }
+
+    @Test
+    void should_resize_automatically_when_load_factor_exceeded() {
+        int initialCapacity = map.capacity();
+        // Вставляем больше элементов, чем порог 0.75 для initialCapacity (16 * 0.75 = 12)
+        for (int i = 0; i < 15; i++) {
+            map.put("item" + i, i);
+        }
+
+        assertTrue(map.capacity() > initialCapacity);
+        assertEquals(15, map.size());
+
+        for (int i = 0; i < 15; i++) {
+            assertEquals(i, map.get("item" + i));
+        }
+    }
+
+    @Test
+    void should_respect_deleted_markers_in_probing_chain() {
+        map.put("a", 1);
+        map.put("b", 2);
+        map.put("c", 3);
+
+        map.remove("b"); // Помечается как DELETED
+
+        // Поиск "c" должен проходить сквозь DELETED слот
+        assertEquals(3, map.get("c"));
+        assertTrue(map.containsKey("c"));
+    }
+
+    @Test
+    void should_return_null_for_missing_keys() {
+        assertNull(map.get("missing"));
+    }
+}
