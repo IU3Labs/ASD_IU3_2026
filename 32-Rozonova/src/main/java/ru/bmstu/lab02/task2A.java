@@ -174,3 +174,33 @@ public class HashMapCustom<K, V> {
         }
         return false;
     }
+
+    /**
+     * Removes the mapping for a key from this map if it is present.
+     * Time complexity: O(1) on average
+     */
+    @SuppressWarnings("unchecked")
+    public boolean remove(K key) {
+        if (key == null) {
+            return false;
+        }
+
+        int capacity = table.length;
+        int hash = (key.hashCode() & 0x7fffffff) % capacity;
+        int index = hash;
+
+        for (int i = 0; i < capacity; i++) {
+            Entry<K, V> entry = table[index];
+            if (entry == null) {
+                return false;
+            }
+            if (entry != DELETED && entry.key.equals(key)) {
+                table[index] = (Entry<K, V>) DELETED;
+                size--;
+                deletedCount++;
+                return true;
+            }
+            index = (index + 1) % capacity;
+        }
+        return false;
+    }
