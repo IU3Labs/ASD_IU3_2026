@@ -35,3 +35,14 @@ public class PriorityQueueWithRemove<T extends Comparable<? super T>> {
     public boolean isEmpty() {
         return size == 0;
     }
+    /**
+     * Returns the minimum element without removing it.
+     * Time complexity: O(1)
+     */
+    @SuppressWarnings("unchecked")
+    public T peek() {
+        if (isEmpty()) {
+            throw new NoSuchElementException("Priority queue is empty");
+        }
+        return (T) data[0];
+    }
