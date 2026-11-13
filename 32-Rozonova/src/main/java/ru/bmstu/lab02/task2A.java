@@ -65,3 +65,59 @@ public class HashMapCustom<K, V> {
     public boolean isEmpty() {
         return size == 0;
     }
+
+    /**
+     * Associates the specified value with the specified key in this map.
+     * Time complexity: O(1) on average, O(n) in worst case (rehashing / full clusters)
+     *
+     * @param key   key with which the specified value is to be associated
+     * @param value value to be associated with the specified key
+     */
+    public void put(K key, V value) {
+        if (key == null) {
+            throw new IllegalArgumentException("Null keys are not supported");
+        }
+
+        // Проверяем необходимость увеличения емкости (учитываем и элементы, и удаленные слоты)
+        if ((size + deletedCount + 1) >= table.length * LOAD_FACTOR) {
+            resize();
+        }
+
+        int capacity = table.length;
+        int hash = (key.hashCode() & 0x7fffffff) % capacity;
+        int index = hash;
+        int firstDeleted = -1;
+
+        for (int i = 0; i < capacity; i++) {
+            Entry<K, V> entry = table[index];
+
+            if (entry == null) {
+                // Нашли пустую ячейку — можем вставлять
+                int targetIndex = (firstDeleted != -1) ? firstDeleted : index;
+                table[targetIndex] = new Entry<>(key, value);
+                size++;
+                if (firstDeleted != -1) {
+                    deletedCount--;
+                }
+                return;
+            } else if (entry == DELETED) {
+                // Запоминаем первую встреченную удаленную ячейку для возможного переиспользования
+                if (firstDeleted == -1) {
+                    firstDeleted = index;
+                }
+            } else if (entry.key.equals(key)) {
+                // Ключ уже существует — обновляем значение
+                entry.value = value;
+                return;
+            }
+
+            index = (index + 1) % capacity; // Линейное пробирование
+        }
+
+        // Если прошли весь круг и нашли удаленную ячейку
+        if (firstDeleted != -1) {
+            table[firstDeleted] = new Entry<>(key, value);
+            size++;
+            deletedCount--;
+        }
+    }
