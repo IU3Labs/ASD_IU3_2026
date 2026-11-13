@@ -60,6 +60,25 @@ public class PriorityQueueWithRemove<T extends Comparable<? super T>> {
         size++;
     }
 
+    /**
+     * Retrieves and removes the minimum element from the priority queue.
+     * Time complexity: O(log n)
+     */
+    @SuppressWarnings("unchecked")
+    public T poll() {
+        if (isEmpty()) {
+            throw new NoSuchElementException("Priority queue is empty");
+        }
+        T min = (T) data[0];
+        data[0] = data[size - 1];
+        data[size - 1] = null;
+        size--;
+        if (size > 0) {
+            siftDown(0);
+        }
+        return min;
+    }
+
     private void siftUp(int index) {
         while (index > 0) {
             int parentIndex = (index - 1) / 2;
@@ -76,3 +95,22 @@ public class PriorityQueueWithRemove<T extends Comparable<? super T>> {
             }
         }
     }
+
+    private void siftDown(int index) {
+        int half = size / 2;
+        while (index < half) {
+            int leftChild = 2 * index + 1;
+            int rightChild = 2 * index + 2;
+            int smallest = leftChild;
+
+            @SuppressWarnings("unchecked")
+            T smallestVal = (T) data[leftChild];
+
+            if (rightChild < size) {
+                @SuppressWarnings("unchecked")
+                T rightVal = (T) data[rightChild];
+                if (rightVal.compareTo(smallestVal) < 0) {
+                    smallest = rightChild;
+                    smallestVal = rightVal;
+                }
+            }
