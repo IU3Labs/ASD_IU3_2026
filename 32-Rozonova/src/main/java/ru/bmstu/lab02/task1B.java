@@ -14,3 +14,39 @@ public class PriorityQueueCustomComparator<T> {
     private Object[] data;
     private int size;
     private final Comparator<? super T> comparator;
+
+    /**
+     * Constructs an empty priority queue with natural ordering and default capacity.
+     */
+    @SuppressWarnings("unchecked")
+    public PriorityQueueCustomComparator() {
+        this.data = new Object[DEFAULT_CAPACITY];
+        this.size = 0;
+        this.comparator = (a, b) -> ((Comparable<T>) a).compareTo(b);
+    }
+
+    /**
+     * Constructs an empty priority queue with specified comparator.
+     *
+     * @param comparator custom comparator for element ordering
+     */
+    @SuppressWarnings("unchecked")
+    public PriorityQueueCustomComparator(Comparator<? super T> comparator) {
+        this.data = new Object[DEFAULT_CAPACITY];
+        this.size = 0;
+        this.comparator = comparator != null ? comparator : (a, b) -> ((Comparable<T>) a).compareTo(b);
+    }
+
+    /**
+     * Returns the number of elements in this priority queue.
+     */
+    public int size() {
+        return size;
+    }
+
+    /**
+     * Returns true if this priority queue contains no elements.
+     */
+    public boolean isEmpty() {
+        return size == 0;
+    }
