@@ -129,3 +129,59 @@ public class PriorityQueueCustom<T extends Comparable<? super T>> {
             }
         }
     }
+    /**
+     * Sifts the element down to maintain the min-heap property.
+     *
+     * @param index index of the element to sift down
+     */
+    private void siftDown(int index) {
+        int half = size / 2;
+        while (index < half) {
+            int leftChild = 2 * index + 1;
+            int rightChild = 2 * index + 2;
+            int smallest = leftChild;
+
+            @SuppressWarnings("unchecked")
+            T smallestVal = (T) data[leftChild];
+
+            if (rightChild < size) {
+                @SuppressWarnings("unchecked")
+                T rightVal = (T) data[rightChild];
+                if (rightVal.compareTo(smallestVal) < 0) {
+                    smallest = rightChild;
+                    smallestVal = rightVal;
+                }
+            }
+
+            @SuppressWarnings("unchecked")
+            T currentVal = (T) data[index];
+            if (currentVal.compareTo(smallestVal) > 0) {
+                swap(index, smallest);
+                index = smallest;
+            } else {
+                break;
+            }
+        }
+    }
+    /**
+     * Swaps two elements in the underlying array.
+     *
+     * @param i first index
+     * @param j second index
+     */
+    private void swap(int i, int j) {
+        Object temp = data[i];
+        data[i] = data[j];
+        data[j] = temp;
+    }
+
+    /**
+     * Ensures internal array capacity, doubling it when full.
+     */
+    private void ensureCapacity() {
+        if (size >= data.length) {
+            int newCapacity = data.length * 2;
+            data = Arrays.copyOf(data, newCapacity);
+        }
+    }
+}
