@@ -68,3 +68,64 @@ public class PriorityQueueCustom<T extends Comparable<? super T>> {
         }
         return (T) data[0];
     }
+
+    /**
+     * Adds an element to the priority queue.
+     * Time complexity: O(log n) amortized
+     *
+     * @-param item element to add
+     * @throws IllegalArgumentException if item is null
+     */
+    public void add(T item) {
+        if (item == null) {
+            throw new IllegalArgumentException("Null items are not allowed");
+        }
+        ensureCapacity();
+        data[size] = item;
+        siftUp(size);
+        size++;
+    }
+
+    /**
+     * Retrieves and removes the minimum element from the priority queue.
+     * Time complexity: O(log n)
+     *
+     * @return the minimum element
+     * @throws NoSuchElementException if the queue is empty
+     */
+    @SuppressWarnings("unchecked")
+    public T poll() {
+        if (isEmpty()) {
+            throw new NoSuchElementException("Priority queue is empty");
+        }
+        T min = (T) data[0];
+        data[0] = data[size - 1];
+        data[size - 1] = null; // Prevent memory leak
+        size--;
+        if (size > 0) {
+            siftDown(0);
+        }
+        return min;
+    }
+
+    /**
+     * Sifts the element up to maintain the min-heap property.
+     *
+     * @param index index of the element to sift up
+     */
+    private void siftUp(int index) {
+        while (index > 0) {
+            int parentIndex = (index - 1) / 2;
+            @SuppressWarnings("unchecked")
+            T current = (T) data[index];
+            @SuppressWarnings("unchecked")
+            T parent = (T) data[parentIndex];
+
+            if (current.compareTo(parent) < 0) {
+                swap(index, parentIndex);
+                index = parentIndex;
+            } else {
+                break;
+            }
+        }
+    }
