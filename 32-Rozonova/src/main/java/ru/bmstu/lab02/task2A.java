@@ -204,3 +204,22 @@ public class HashMapCustom<K, V> {
         }
         return false;
     }
+
+    /**
+     * Doubles the capacity of the table and rehashes all active entries.
+     */
+    @SuppressWarnings("unchecked")
+    private void resize() {
+        Entry<K, V>[] oldTable = table;
+        int newCapacity = oldTable.length * 2;
+        table = new Entry[newCapacity];
+        size = 0;
+        deletedCount = 0;
+
+        for (Entry<K, V> entry : oldTable) {
+            if (entry != null && entry != DELETED) {
+                put(entry.key, entry.value);
+            }
+        }
+    }
+}
