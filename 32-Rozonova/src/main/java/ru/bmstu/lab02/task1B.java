@@ -50,3 +50,14 @@ public class PriorityQueueCustomComparator<T> {
     public boolean isEmpty() {
         return size == 0;
     }
+
+    /**
+     * Returns the top priority element without removing it.
+     */
+    @SuppressWarnings("unchecked")
+    public T peek() {
+        if (isEmpty()) {
+            throw new NoSuchElementException("Priority queue is empty");
+        }
+        return (T) data[0];
+    }
