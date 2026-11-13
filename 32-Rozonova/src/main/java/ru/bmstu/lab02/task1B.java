@@ -116,3 +116,46 @@ public class PriorityQueueCustomComparator<T> {
             }
         }
     }
+
+    private void siftDown(int index) {
+        int half = size / 2;
+        while (index < half) {
+            int leftChild = 2 * index + 1;
+            int rightChild = 2 * index + 2;
+            int bestChild = leftChild;
+
+            @SuppressWarnings("unchecked")
+            T bestVal = (T) data[leftChild];
+
+            if (rightChild < size) {
+                @SuppressWarnings("unchecked")
+                T rightVal = (T) data[rightChild];
+                if (compare(rightVal, bestVal)) {
+                    bestChild = rightChild;
+                    bestVal = rightVal;
+                }
+            }
+
+            @SuppressWarnings("unchecked")
+            T currentVal = (T) data[index];
+            if (compare(bestVal, currentVal)) {
+                swap(index, bestChild);
+                index = bestChild;
+            } else {
+                break;
+            }
+        }
+    }
+
+    private void swap(int i, int j) {
+        Object temp = data[i];
+        data[i] = data[j];
+        data[j] = temp;
+    }
+
+    private void ensureCapacity() {
+        if (size >= data.length) {
+            data = Arrays.copyOf(data, data.length * 2);
+        }
+    }
+}
