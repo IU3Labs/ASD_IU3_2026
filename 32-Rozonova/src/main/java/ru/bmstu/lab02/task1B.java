@@ -61,3 +61,58 @@ public class PriorityQueueCustomComparator<T> {
         }
         return (T) data[0];
     }
+
+    /**
+     * Adds an element to the priority queue.
+     */
+    public void add(T item) {
+        if (item == null) {
+            throw new IllegalArgumentException("Null items are not allowed");
+        }
+        ensureCapacity();
+        data[size] = item;
+        siftUp(size);
+        size++;
+    }
+
+    /**
+     * Retrieves and removes the top priority element.
+     */
+    @SuppressWarnings("unchecked")
+    public T poll() {
+        if (isEmpty()) {
+            throw new NoSuchElementException("Priority queue is empty");
+        }
+        T top = (T) data[0];
+        data[0] = data[size - 1];
+        data[size - 1] = null;
+        size--;
+        if (size > 0) {
+            siftDown(0);
+        }
+        return top;
+    }
+
+    /**
+     * Helper method to compare elements using the provided comparator.
+     */
+    private boolean compare(T a, T b) {
+        return comparator.compare(a, b) < 0;
+    }
+
+    private void siftUp(int index) {
+        while (index > 0) {
+            int parentIndex = (index - 1) / 2;
+            @SuppressWarnings("unchecked")
+            T current = (T) data[index];
+            @SuppressWarnings("unchecked")
+            T parent = (T) data[parentIndex];
+
+            if (compare(current, parent)) {
+                swap(index, parentIndex);
+                index = parentIndex;
+            } else {
+                break;
+            }
+        }
+    }
