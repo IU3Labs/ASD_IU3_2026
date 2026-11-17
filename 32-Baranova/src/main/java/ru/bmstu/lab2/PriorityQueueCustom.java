@@ -91,14 +91,7 @@ public class PriorityQueueCustom<T extends Comparable<T>> {
         }
 
         T result = getElement(0);
-        heap[0] = heap[size - 1];
-        size--;
-        heap[size] = null;
-
-        if (!isEmpty()) {
-            siftDown(0);
-        }
-
+        removeAt(0);
         return result;
     }
 
@@ -127,5 +120,35 @@ public class PriorityQueueCustom<T extends Comparable<T>> {
         Object temp = heap[first];
         heap[first] = heap[second];
         heap[second] = temp;
+    }
+    /** Удаляет первое вхождение элемента. */
+    public boolean remove(T item) {
+        for (int i = 0; i < size; i++) {
+            if (getElement(i).equals(item)) {
+                removeAt(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void removeAt(int index) {
+        heap[index] = heap[size - 1];
+        size--;
+        heap[size] = null;
+
+        if (index == size) {
+            return;
+        }
+
+        // Выбираем направление просеивания.
+        int parent = (index - 1) / 2;
+
+        if (index > 0 &&
+                getElement(index).compareTo(getElement(parent)) < 0) {
+            siftUp(index);
+        } else {
+            siftDown(index);
+        }
     }
 }

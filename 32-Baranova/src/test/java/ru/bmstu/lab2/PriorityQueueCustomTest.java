@@ -136,4 +136,101 @@ class PriorityQueueCustomTest {
         assertEquals("banana", queue.poll());
         assertEquals("cherry", queue.poll());
     }
+
+    @Test
+    void shouldRemoveRoot() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        queue.add(5);
+        queue.add(1);
+        queue.add(3);
+
+        assertTrue(queue.remove(1));
+        assertEquals(3, queue.peek());
+        assertEquals(2, queue.size());
+    }
+
+    @Test
+    void shouldRemoveMiddleElement() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        queue.add(1);
+        queue.add(3);
+        queue.add(5);
+        queue.add(7);
+        queue.add(9);
+
+        assertTrue(queue.remove(3));
+        assertEquals(1, queue.poll());
+        assertEquals(5, queue.poll());
+        assertEquals(7, queue.poll());
+        assertEquals(9, queue.poll());
+    }
+
+    @Test
+    void shouldNotRemoveMissingElement() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        queue.add(5);
+
+        assertFalse(queue.remove(10));
+        assertEquals(1, queue.size());
+    }
+
+    @Test
+    void shouldNotRemoveFromEmptyQueue() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+
+        assertFalse(queue.remove(5));
+    }
+
+    @Test
+    void shouldRemoveOnlyOneDuplicate() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        queue.add(3);
+        queue.add(3);
+
+        assertTrue(queue.remove(3));
+        assertEquals(1, queue.size());
+        assertEquals(3, queue.peek());
+    }
+
+    @Test
+    void shouldRemoveLastElement() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        queue.add(1);
+        queue.add(2);
+        queue.add(3);
+
+        assertTrue(queue.remove(3));
+        assertEquals(2, queue.size());
+        assertEquals(1, queue.poll());
+        assertEquals(2, queue.poll());
+    }
+
+    @Test
+    void shouldRemoveSingleElement() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        queue.add(5);
+
+        assertTrue(queue.remove(5));
+        assertTrue(queue.isEmpty());
+    }
+
+    @Test
+    void shouldSiftUpAfterRemoval() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        queue.add(1);
+        queue.add(5);
+        queue.add(2);
+        queue.add(7);
+        queue.add(8);
+        queue.add(3);
+        queue.add(4);
+
+        assertTrue(queue.remove(7));
+        assertEquals(1, queue.poll());
+        assertEquals(2, queue.poll());
+        assertEquals(3, queue.poll());
+        assertEquals(4, queue.poll());
+        assertEquals(5, queue.poll());
+        assertEquals(8, queue.poll());
+    }
 }
