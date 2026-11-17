@@ -233,4 +233,74 @@ class PriorityQueueCustomTest {
         assertEquals(5, queue.poll());
         assertEquals(8, queue.poll());
     }
+
+    @Test
+    void shouldBuildHeapFromArray() {
+        Integer[] array = {9, 5, 7, 1, 3};
+        PriorityQueueCustom<Integer> queue =
+                new PriorityQueueCustom<>(array);
+
+        assertEquals(5, queue.size());
+        assertEquals(1, queue.poll());
+        assertEquals(3, queue.poll());
+        assertEquals(5, queue.poll());
+        assertEquals(7, queue.poll());
+        assertEquals(9, queue.poll());
+    }
+
+    @Test
+    void shouldBuildHeapFromEmptyArray() {
+        Integer[] array = {};
+        PriorityQueueCustom<Integer> queue =
+                new PriorityQueueCustom<>(array);
+
+        assertTrue(queue.isEmpty());
+        assertEquals(0, queue.size());
+    }
+
+    @Test
+    void shouldBuildHeapFromSingleElement() {
+        Integer[] array = {5};
+        PriorityQueueCustom<Integer> queue =
+                new PriorityQueueCustom<>(array);
+
+        assertEquals(5, queue.poll());
+        assertTrue(queue.isEmpty());
+    }
+
+    @Test
+    void shouldBuildHeapWithDuplicates() {
+        Integer[] array = {3, 1, 3, 1};
+        PriorityQueueCustom<Integer> queue =
+                new PriorityQueueCustom<>(array);
+
+        assertEquals(1, queue.poll());
+        assertEquals(1, queue.poll());
+        assertEquals(3, queue.poll());
+        assertEquals(3, queue.poll());
+    }
+
+    @Test
+    void shouldAddAfterBuildingHeap() {
+        Integer[] array = {5, 3, 7};
+        PriorityQueueCustom<Integer> queue =
+                new PriorityQueueCustom<>(array);
+
+        queue.add(1);
+
+        assertEquals(4, queue.size());
+        assertEquals(1, queue.peek());
+    }
+
+    @Test
+    void shouldNotModifyOriginalArray() {
+        Integer[] array = {9, 3, 1};
+        PriorityQueueCustom<Integer> queue =
+                new PriorityQueueCustom<>(array);
+
+        assertEquals(1, queue.peek());
+        assertEquals(9, array[0]);
+        assertEquals(3, array[1]);
+        assertEquals(1, array[2]);
+    }
 }

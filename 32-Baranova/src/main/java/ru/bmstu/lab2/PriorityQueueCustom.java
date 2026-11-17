@@ -20,6 +20,24 @@ public class PriorityQueueCustom<T extends Comparable<T>> {
         size = 0;
     }
 
+    /** Строит кучу из массива за O(n). */
+    public PriorityQueueCustom(T[] array) {
+        heap = new Object[Math.max(DEFAULT_CAPACITY, array.length)];
+        size = array.length;
+
+        for (int i = 0; i < size; i++) {
+            if (array[i] == null) {
+                throw new NullPointerException();
+            }
+            heap[i] = array[i];
+        }
+
+        // Просеиваем внутренние узлы от последнего к корню.
+        for (int i = size / 2 - 1; i >= 0; i--) {
+            siftDown(i);
+        }
+    }
+
     /**
      * Возвращает количество элементов в очереди.
      */
