@@ -1,0 +1,172 @@
+package ru.bmstu.lab2;
+import java.util.NoSuchElementException;
+
+/**
+ * Очередь с приоритетом на основе минимальной бинарной кучи.
+ * Элементы хранятся в динамическом массиве.
+ */
+public class PriorityQueueCustom<T extends Comparable<T>> {
+
+    private static final int DEFAULT_CAPACITY = 10;
+
+    private Object[] heap;
+    private int size;
+
+    /**
+     * Создаёт пустую очередь с приоритетом.
+     */
+    public PriorityQueueCustom() {
+        heap = new Object[DEFAULT_CAPACITY];
+        size = 0;
+    }
+
+    /** Строит кучу из массива за O(n). */
+    public PriorityQueueCustom(T[] array) {
+        heap = new Object[Math.max(DEFAULT_CAPACITY, array.length)];
+        size = array.length;
+
+        for (int i = 0; i < size; i++) {
+            if (array[i] == null) {
+                throw new NullPointerException();
+            }
+            heap[i] = array[i];
+        }
+
+        // Просеиваем внутренние узлы от последнего к корню.
+        for (int i = size / 2 - 1; i >= 0; i--) {
+            siftDown(i);
+        }
+    }
+
+    /**
+     * Возвращает количество элементов в очереди.
+     */
+    public int size() {
+        return size;
+    }
+
+    /**
+     * Проверяет, является ли очередь пустой.
+     */
+    public boolean isEmpty() {
+        return size == 0;
+    }
+    /** Добавляет элемент в очередь. */
+    public void add(T item) {
+        if (item == null) {
+            throw new NullPointerException();
+        }
+        if (size == heap.length) {
+            grow();
+        }
+
+        heap[size] = item;
+        size++;
+        siftUp(size - 1);
+    }
+
+    private void grow() {
+        Object[] newHeap = new Object[heap.length * 2];
+
+        for (int i = 0; i < size; i++) {
+            newHeap[i] = heap[i];
+        }
+
+        heap = newHeap;
+    }
+
+    // Просеивание элемента вверх.
+    private void siftUp(int index) {
+        while (index > 0) {
+            int parent = (index - 1) / 2;
+
+            if (getElement(index).compareTo(getElement(parent)) >= 0) {
+                break;
+            }
+
+            swap(index, parent);
+
+            index = parent;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private T getElement(int index) {
+        return (T) heap[index];
+    }
+    /** Возвращает минимальный элемент без удаления или null. */
+    public T peek() {
+        if (isEmpty()) {
+            return null;
+        }
+        return getElement(0);
+    }
+
+    /** Извлекает минимальный элемент. */
+    public T poll() {
+        if (isEmpty()) {
+            throw new NoSuchElementException();
+        }
+
+        T result = getElement(0);
+        removeAt(0);
+        return result;
+    }
+
+    // Просеивание элемента вниз.
+    private void siftDown(int index) {
+        while (index < size / 2) {
+            int left = 2 * index + 1;
+            int right = 2 * index + 2;
+            int smallest = left;
+
+            if (right < size &&
+                    getElement(right).compareTo(getElement(left)) < 0) {
+                smallest = right;
+            }
+
+            if (getElement(index).compareTo(getElement(smallest)) <= 0) {
+                break;
+            }
+
+            swap(index, smallest);
+            index = smallest;
+        }
+    }
+
+    private void swap(int first, int second) {
+        Object temp = heap[first];
+        heap[first] = heap[second];
+        heap[second] = temp;
+    }
+    /** Удаляет первое вхождение элемента. */
+    public boolean remove(T item) {
+        for (int i = 0; i < size; i++) {
+            if (getElement(i).equals(item)) {
+                removeAt(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void removeAt(int index) {
+        heap[index] = heap[size - 1];
+        size--;
+        heap[size] = null;
+
+        if (index == size) {
+            return;
+        }
+
+        // Выбираем направление просеивания.
+        int parent = (index - 1) / 2;
+
+        if (index > 0 &&
+                getElement(index).compareTo(getElement(parent)) < 0) {
+            siftUp(index);
+        } else {
+            siftDown(index);
+        }
+    }
+}
