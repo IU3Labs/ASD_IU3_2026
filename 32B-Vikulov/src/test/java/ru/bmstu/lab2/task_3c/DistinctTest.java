@@ -44,6 +44,18 @@ class DistinctTest {
     }
 
     @Test
+    void shouldReturnSingleNullForAllNullInput() {
+        assertEquals(Arrays.asList((String) null), Distinct.distinct(Arrays.asList(null, null)));
+    }
+
+    @Test
+    void shouldGrowResultArrayAndKeepOrder() {
+        List<Integer> input = List.of(9, 8, 7, 6, 5, 4, 9, 3, 2, 1, 0, 8);
+
+        assertEquals(List.of(9, 8, 7, 6, 5, 4, 3, 2, 1, 0), Distinct.distinct(input));
+    }
+
+    @Test
     void shouldNotModifyInputList() {
         List<Integer> input = new ArrayList<>(List.of(2, 2, 1));
 

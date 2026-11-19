@@ -1,6 +1,6 @@
 package ru.bmstu.lab2.task_3c;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import ru.bmstu.lab2.task_2a.HashMapCustom;
 
@@ -13,6 +13,8 @@ import ru.bmstu.lab2.task_2a.HashMapCustom;
  * поэтому весь алгоритм O(n) в среднем по времени и O(u) по памяти, где u — число уникальных элементов.
  */
 public final class Distinct {
+
+    private static final int INITIAL_RESULT_CAPACITY = 8;
 
     private Distinct() {
     }
@@ -28,18 +30,26 @@ public final class Distinct {
         HashMapCustom<T, Boolean> seen = new HashMapCustom<>();
         // таблица не принимает null-ключи, поэтому факт встречи null хранится отдельно
         boolean seenNull = false;
-        List<T> result = new ArrayList<>();
+        @SuppressWarnings("unchecked")
+        T[] result = (T[]) new Object[INITIAL_RESULT_CAPACITY];
+        int size = 0;
         for (T item : items) {
             if (item == null) {
-                if (!seenNull) {
-                    seenNull = true;
-                    result.add(null);
+                if (seenNull) {
+                    continue;
                 }
-            } else if (!seen.containsKey(item)) {
+                seenNull = true;
+            } else {
+                if (seen.containsKey(item)) {
+                    continue;
+                }
                 seen.put(item, Boolean.TRUE);
-                result.add(item);
             }
+            if (size == result.length) {
+                result = Arrays.copyOf(result, size * 2);
+            }
+            result[size++] = item;
         }
-        return result;
+        return Arrays.asList(Arrays.copyOf(result, size));
     }
 }
