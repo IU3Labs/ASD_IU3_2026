@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import ru.bmstu.lab2.task_2a.HashMapCustom;
+import java.util.Map;
 import ru.bmstu.lab2.task_3b.WordFrequency;
 
 /**
@@ -38,11 +38,11 @@ public final class WordFrequencyDemo {
         }
         String text = builder.toString();
         double millis = Bench.averageMillis(() -> WordFrequency.countWords(text));
-        HashMapCustom<String, Integer> counts = WordFrequency.countWords(text);
+        Map<String, Integer> counts = WordFrequency.countWords(text);
 
         long bytes = text.getBytes(StandardCharsets.UTF_8).length;
-        System.out.printf("Текст: %.2f МБ, уникальных слов: %d, ёмкость таблицы: %d%n",
-                bytes / BYTES_PER_MB, counts.size(), counts.capacity());
+        System.out.printf("Текст: %.2f МБ, уникальных слов: %d%n",
+                bytes / BYTES_PER_MB, counts.size());
         System.out.printf("Среднее время countWords: %s мс%n%n", HashMapBenchmark.format(millis));
         Bench.row("#", "Слово", "Частота");
         Bench.row("---", "---", "---");

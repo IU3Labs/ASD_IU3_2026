@@ -12,14 +12,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import org.junit.jupiter.api.Test;
-import ru.bmstu.lab2.task_2a.HashMapCustom;
 import ru.bmstu.lab2.task_3b.WordFrequency.WordCount;
 
 class WordFrequencyTest {
 
     @Test
     void shouldCountWordsIgnoringCase() {
-        HashMapCustom<String, Integer> counts = WordFrequency.countWords("Cat cat CAT dog");
+        Map<String, Integer> counts = WordFrequency.countWords("Cat cat CAT dog");
 
         assertEquals(3, counts.get("cat"));
         assertEquals(1, counts.get("dog"));
@@ -28,7 +27,7 @@ class WordFrequencyTest {
 
     @Test
     void shouldDropPunctuation() {
-        HashMapCustom<String, Integer> counts = WordFrequency.countWords("Hello, world! Hello... (world)?");
+        Map<String, Integer> counts = WordFrequency.countWords("Hello, world! Hello... (world)?");
 
         assertEquals(2, counts.get("hello"));
         assertEquals(2, counts.get("world"));
@@ -37,7 +36,7 @@ class WordFrequencyTest {
 
     @Test
     void shouldHandleCyrillicAndDigits() {
-        HashMapCustom<String, Integer> counts = WordFrequency.countWords("Ёжик ЁЖИК в 2026 году, 2026!");
+        Map<String, Integer> counts = WordFrequency.countWords("Ёжик ЁЖИК в 2026 году, 2026!");
 
         assertEquals(2, counts.get("ёжик"));
         assertEquals(2, counts.get("2026"));
@@ -46,7 +45,7 @@ class WordFrequencyTest {
 
     @Test
     void shouldSplitOnHyphensApostrophesAndLineBreaks() {
-        HashMapCustom<String, Integer> counts = WordFrequency.countWords("don't\nwell-known\tdon't");
+        Map<String, Integer> counts = WordFrequency.countWords("don't\nwell-known\tdon't");
 
         assertEquals(2, counts.get("don"));
         assertEquals(2, counts.get("t"));
@@ -68,7 +67,7 @@ class WordFrequencyTest {
 
     @Test
     void shouldReturnTopWordsByFrequencyThenAlphabetically() {
-        HashMapCustom<String, Integer> counts = WordFrequency.countWords("b a c b a b d");
+        Map<String, Integer> counts = WordFrequency.countWords("b a c b a b d");
 
         List<WordCount> actual = WordFrequency.topWords(counts, 3);
 
@@ -78,7 +77,7 @@ class WordFrequencyTest {
 
     @Test
     void shouldReturnAllWordsWhenLimitExceedsDistinctCount() {
-        HashMapCustom<String, Integer> counts = WordFrequency.countWords("x y");
+        Map<String, Integer> counts = WordFrequency.countWords("x y");
 
         assertEquals(2, WordFrequency.topWords(counts, 10).size());
         assertTrue(WordFrequency.topWords(counts, 0).isEmpty());
@@ -86,9 +85,14 @@ class WordFrequencyTest {
 
     @Test
     void shouldRejectNegativeLimit() {
-        HashMapCustom<String, Integer> counts = WordFrequency.countWords("x");
+        Map<String, Integer> counts = WordFrequency.countWords("x");
 
         assertThrows(IllegalArgumentException.class, () -> WordFrequency.topWords(counts, -1));
+    }
+
+    @Test
+    void shouldCountSupplementaryUnicodeLetters() {
+        assertEquals(Map.of("𐐨", 2), WordFrequency.countWords("𐐀, 𐐨"));
     }
 
     @Test
@@ -104,9 +108,11 @@ class WordFrequencyTest {
             expected.merge(word.toLowerCase(Locale.ROOT), 1, Integer::sum);
         }
 
-        HashMapCustom<String, Integer> actual = WordFrequency.countWords(text.toString());
+        Map<String, Integer> actual = WordFrequency.countWords(text.toString());
 
-        assertEquals(expected.size(), actual.size());
-        expected.forEach((word, count) -> assertEquals(count, actual.get(word)));
+        assertEquals(expected, actual);
+        assertEquals(actual, expected);
+        assertFalse(actual.containsKey(null));
+        assertEquals(null, actual.get(42));
     }
 }

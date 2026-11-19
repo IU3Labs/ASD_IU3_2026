@@ -1,9 +1,10 @@
 package ru.bmstu.lab2.task_3b;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import ru.bmstu.lab2.task_2a.HashMapCustom;
 
 /**
@@ -40,21 +41,25 @@ public final class WordFrequency {
      * @param text исходный текст
      * @return таблица «слово → число вхождений»
      */
-    public static HashMapCustom<String, Integer> countWords(String text) {
+    public static Map<String, Integer> countWords(String text) {
         HashMapCustom<String, Integer> counts = new HashMapCustom<>();
         String lower = text.toLowerCase(Locale.ROOT);
         int start = -1;
-        // i доходит до length включительно: «виртуальный» разделитель в конце закрывает последнее слово
-        for (int i = 0; i <= lower.length(); i++) {
-            boolean partOfWord = i < lower.length() && Character.isLetterOrDigit(lower.charAt(i));
+        for (int i = 0; i < lower.length();) {
+            int codePoint = lower.codePointAt(i);
+            boolean partOfWord = Character.isLetterOrDigit(codePoint);
             if (partOfWord && start < 0) {
                 start = i;
             } else if (!partOfWord && start >= 0) {
                 increment(counts, lower.substring(start, i));
                 start = -1;
             }
+            i += Character.charCount(codePoint);
         }
-        return counts;
+        if (start >= 0) {
+            increment(counts, lower.substring(start));
+        }
+        return new WordCounts(counts);
     }
 
     /**
@@ -65,14 +70,17 @@ public final class WordFrequency {
      * @return слова по убыванию частоты (при равной частоте — по алфавиту)
      * @throws IllegalArgumentException если {@code limit} отрицателен
      */
-    public static List<WordCount> topWords(HashMapCustom<String, Integer> counts, int limit) {
+    public static List<WordCount> topWords(Map<String, Integer> counts, int limit) {
         if (limit < 0) {
             throw new IllegalArgumentException("Limit must not be negative: " + limit);
         }
-        List<WordCount> all = new ArrayList<>(counts.size());
-        counts.forEach((word, count) -> all.add(new WordCount(word, count)));
-        all.sort(BY_FREQUENCY);
-        return new ArrayList<>(all.subList(0, Math.min(limit, all.size())));
+        WordCount[] all = new WordCount[counts.size()];
+        int index = 0;
+        for (Map.Entry<String, Integer> entry : counts.entrySet()) {
+            all[index++] = new WordCount(entry.getKey(), entry.getValue());
+        }
+        Arrays.sort(all, BY_FREQUENCY);
+        return Arrays.asList(Arrays.copyOf(all, Math.min(limit, all.length)));
     }
 
     private static void increment(HashMapCustom<String, Integer> counts, String word) {
