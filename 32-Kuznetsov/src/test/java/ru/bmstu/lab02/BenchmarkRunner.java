@@ -1,9 +1,9 @@
 package ru.bmstu.lab02;
 
-import ru.bmstu.lab02.task_01a.PriorityQueueCustom;
-import ru.bmstu.lab02.task_01b.ComparatorPriorityQueue;
-import ru.bmstu.lab02.task_01c.RemovablePriorityQueue;
-import ru.bmstu.lab02.task_02a.HashMapCustom;
+import ru.bmstu.lab02.task1a.PriorityQueueCustom;
+import ru.bmstu.lab02.task1b.OrderedPriorityQueue;
+import ru.bmstu.lab02.task1c.DeletablePriorityQueue;
+import ru.bmstu.lab02.task2a.HashMapCustom;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -11,7 +11,12 @@ import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.function.LongSupplier;
 
-public class Lab02Benchmark {
+/**
+ * Замеры времени собственных структур и структур java.util на 10 000, 50 000 и 100 000 элементов.
+ *
+ * <p>Запускается через {@code main}; печатает таблицы в формате Markdown для benchmarks.md.
+ */
+public class BenchmarkRunner {
 
     private static final int[] SIZES = {10_000, 50_000, 100_000};
     private static final int MIN_MAX_SIZE = 100_000;
@@ -22,6 +27,12 @@ public class Lab02Benchmark {
 
     private static long checksum = 0;
 
+
+    /**
+     * Запускает все замеры и печатает результаты.
+     *
+     * @param args не используются
+     */
     public static void main(String[] args) {
         System.out.println("| Структура | Операция | N элементов | Среднее время (мс) |");
         System.out.println("|---|---|---|---|");
@@ -29,7 +40,7 @@ public class Lab02Benchmark {
             Integer[] data = randomData(n);
             printRow("PriorityQueueCustom", "add + poll (цикл)", n, average(() -> customQueueCycle(data)));
             printRow("java.util.PriorityQueue", "add + poll (цикл)", n, average(() -> javaQueueCycle(data)));
-            printRow("RemovablePriorityQueue", "remove 1000 эл.", n, average(() -> customQueueRemove(data)));
+            printRow("DeletablePriorityQueue", "remove 1000 эл.", n, average(() -> customQueueRemove(data)));
             printRow("java.util.PriorityQueue", "remove 1000 эл.", n, average(() -> javaQueueRemove(data)));
             printRow("HashMapCustom", "put", n, average(() -> customMapPut(data)));
             printRow("java.util.HashMap", "put", n, average(() -> javaMapPut(data)));
@@ -101,7 +112,7 @@ public class Lab02Benchmark {
 
     private static long queueCycleWithComparator(Integer[] data, Comparator<Integer> comparator) {
         long start = System.nanoTime();
-        ComparatorPriorityQueue<Integer> queue = new ComparatorPriorityQueue<>(comparator);
+        OrderedPriorityQueue<Integer> queue = new OrderedPriorityQueue<>(comparator);
         for (Integer value : data) {
             queue.add(value);
         }
@@ -113,7 +124,7 @@ public class Lab02Benchmark {
 
     private static long countComparisons(Integer[] data, Comparator<Integer> comparator) {
         long[] counter = {0};
-        ComparatorPriorityQueue<Integer> queue = new ComparatorPriorityQueue<>((a, b) -> {
+        OrderedPriorityQueue<Integer> queue = new OrderedPriorityQueue<>((a, b) -> {
             counter[0]++;
             if (comparator == null) {
                 return a.compareTo(b);
@@ -130,7 +141,7 @@ public class Lab02Benchmark {
     }
 
     private static long customQueueRemove(Integer[] data) {
-        RemovablePriorityQueue<Integer> queue = new RemovablePriorityQueue<>();
+        DeletablePriorityQueue<Integer> queue = new DeletablePriorityQueue<>();
         for (Integer value : data) {
             queue.add(value);
         }

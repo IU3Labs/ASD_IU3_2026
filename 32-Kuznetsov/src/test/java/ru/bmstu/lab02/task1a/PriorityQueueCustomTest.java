@@ -1,4 +1,4 @@
-package ru.bmstu.lab02.task_01a;
+package ru.bmstu.lab02.task1a;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,8 +12,11 @@ import java.util.Random;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static ru.bmstu.lab02.QueueTestHelper.drain;
+import static ru.bmstu.lab02.HeapTestUtils.pollAll;
 
+/**
+ * Тесты задачи 1A: базовые операции очереди, пустая очередь, расширение массива и порядок неубывания.
+ */
 class PriorityQueueCustomTest {
 
     private static final long SEED = 25;
@@ -85,7 +88,7 @@ class PriorityQueueCustomTest {
         queue.add(7);
         queue.add(2);
 
-        assertEquals(List.of(2, 7), drain(queue));
+        assertEquals(List.of(2, 7), pollAll(queue));
     }
 
     @Test
@@ -98,7 +101,7 @@ class PriorityQueueCustomTest {
         queue.add(2);
         queue.add(6);
 
-        assertEquals(List.of(2, 2, 6, 6, 6), drain(queue));
+        assertEquals(List.of(2, 2, 6, 6, 6), pollAll(queue));
     }
 
     @Test
@@ -110,7 +113,7 @@ class PriorityQueueCustomTest {
         }
 
         assertEquals(9, queue.size());
-        assertEquals(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9), drain(queue));
+        assertEquals(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9), pollAll(queue));
     }
 
     @Test
@@ -125,8 +128,8 @@ class PriorityQueueCustomTest {
             expected.add(i);
         }
 
-        assertEquals(expected, drain(sorted));
-        assertEquals(expected, drain(reversed));
+        assertEquals(expected, pollAll(sorted));
+        assertEquals(expected, pollAll(reversed));
     }
 
     @Test
@@ -142,7 +145,7 @@ class PriorityQueueCustomTest {
         }
         Collections.sort(expected);
 
-        assertEquals(expected, drain(queue));
+        assertEquals(expected, pollAll(queue));
     }
 
     @Test
@@ -154,6 +157,6 @@ class PriorityQueueCustomTest {
         queue.add("orange");
         queue.add("banana");
 
-        assertEquals(List.of("apple", "banana", "orange", "pear"), drain(queue));
+        assertEquals(List.of("apple", "banana", "orange", "pear"), pollAll(queue));
     }
 }

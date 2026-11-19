@@ -1,4 +1,4 @@
-package ru.bmstu.lab02.task_02a;
+package ru.bmstu.lab02.task2a;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,6 +13,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Тесты задачи 2A: операции таблицы, коллизии, маркер DELETED и рост ёмкости.
+ */
 class HashMapCustomTest {
 
     private static final long SEED = 25;

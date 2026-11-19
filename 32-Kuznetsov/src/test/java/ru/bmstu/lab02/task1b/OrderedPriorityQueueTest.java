@@ -1,4 +1,4 @@
-package ru.bmstu.lab02.task_01b;
+package ru.bmstu.lab02.task1b;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,54 +13,57 @@ import java.util.Random;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static ru.bmstu.lab02.QueueTestHelper.drain;
+import static ru.bmstu.lab02.HeapTestUtils.pollAll;
 
-class ComparatorPriorityQueueTest {
+/**
+ * Тесты задачи 1B: режимы min-heap и max-heap и пользовательские компараторы.
+ */
+class OrderedPriorityQueueTest {
 
     private static final long SEED = 25;
 
     @Test
     @DisplayName("Без компаратора используется естественный порядок")
     void shouldUseNaturalOrderWithoutComparator() {
-        ComparatorPriorityQueue<Integer> queue = new ComparatorPriorityQueue<>();
+        OrderedPriorityQueue<Integer> queue = new OrderedPriorityQueue<>();
         queue.add(8);
         queue.add(1);
         queue.add(5);
 
-        assertEquals(List.of(1, 5, 8), drain(queue));
+        assertEquals(List.of(1, 5, 8), pollAll(queue));
     }
 
     @Test
     @DisplayName("minHeap() извлекает элементы по возрастанию")
     void shouldWorkAsMinHeap() {
-        ComparatorPriorityQueue<Integer> queue = ComparatorPriorityQueue.minHeap();
+        OrderedPriorityQueue<Integer> queue = OrderedPriorityQueue.minHeap();
         queue.add(12);
         queue.add(-3);
         queue.add(7);
         queue.add(0);
 
         assertEquals(-3, queue.peek());
-        assertEquals(List.of(-3, 0, 7, 12), drain(queue));
+        assertEquals(List.of(-3, 0, 7, 12), pollAll(queue));
     }
 
     @Test
     @DisplayName("maxHeap() извлекает элементы по убыванию")
     void shouldWorkAsMaxHeap() {
-        ComparatorPriorityQueue<Integer> queue = ComparatorPriorityQueue.maxHeap();
+        OrderedPriorityQueue<Integer> queue = OrderedPriorityQueue.maxHeap();
         queue.add(12);
         queue.add(-3);
         queue.add(7);
         queue.add(0);
 
         assertEquals(12, queue.peek());
-        assertEquals(List.of(12, 7, 0, -3), drain(queue));
+        assertEquals(List.of(12, 7, 0, -3), pollAll(queue));
     }
 
     @Test
     @DisplayName("Max-heap на 1000 случайных числах даёт порядок невозрастания")
     void shouldPollMaxHeapInNonIncreasingOrder() {
         Random random = new Random(SEED);
-        ComparatorPriorityQueue<Integer> queue = new ComparatorPriorityQueue<>(Comparator.reverseOrder());
+        OrderedPriorityQueue<Integer> queue = new OrderedPriorityQueue<>(Comparator.reverseOrder());
         List<Integer> expected = new ArrayList<>();
         for (int i = 0; i < 1000; i++) {
             int value = random.nextInt(500);
@@ -69,66 +72,66 @@ class ComparatorPriorityQueueTest {
         }
         expected.sort(Comparator.reverseOrder());
 
-        assertEquals(expected, drain(queue));
+        assertEquals(expected, pollAll(queue));
     }
 
     @Test
     @DisplayName("Min- и max-куча на одних данных дают зеркальный порядок")
     void shouldGiveMirroredOrderForMinAndMax() {
         Random random = new Random(SEED);
-        ComparatorPriorityQueue<Integer> min = ComparatorPriorityQueue.minHeap();
-        ComparatorPriorityQueue<Integer> max = ComparatorPriorityQueue.maxHeap();
+        OrderedPriorityQueue<Integer> min = OrderedPriorityQueue.minHeap();
+        OrderedPriorityQueue<Integer> max = OrderedPriorityQueue.maxHeap();
         for (int i = 0; i < 300; i++) {
             int value = random.nextInt();
             min.add(value);
             max.add(value);
         }
-        List<Integer> fromMax = drain(max);
+        List<Integer> fromMax = pollAll(max);
         Collections.reverse(fromMax);
 
-        assertEquals(drain(min), fromMax);
+        assertEquals(pollAll(min), fromMax);
     }
 
     @Test
     @DisplayName("Свой компаратор: строки по длине")
     void shouldUseCustomComparatorForStrings() {
-        ComparatorPriorityQueue<String> queue = new ComparatorPriorityQueue<>(Comparator.comparingInt(String::length));
+        OrderedPriorityQueue<String> queue = new OrderedPriorityQueue<>(Comparator.comparingInt(String::length));
         queue.add("кузнецов");
         queue.add("ит");
         queue.add("бмсту");
         queue.add("иу3");
 
-        assertEquals(List.of("ит", "иу3", "бмсту", "кузнецов"), drain(queue));
+        assertEquals(List.of("ит", "иу3", "бмсту", "кузнецов"), pollAll(queue));
     }
 
     @Test
     @DisplayName("Свой компаратор: числа по модулю")
     void shouldUseCustomComparatorByAbsoluteValue() {
-        ComparatorPriorityQueue<Integer> queue = new ComparatorPriorityQueue<>(Comparator.comparingInt(Math::abs));
+        OrderedPriorityQueue<Integer> queue = new OrderedPriorityQueue<>(Comparator.comparingInt(Math::abs));
         queue.add(-10);
         queue.add(4);
         queue.add(-1);
         queue.add(7);
 
-        assertEquals(List.of(-1, 4, 7, -10), drain(queue));
+        assertEquals(List.of(-1, 4, 7, -10), pollAll(queue));
     }
 
     @Test
     @DisplayName("Max-heap сохраняет повторяющиеся элементы")
     void shouldKeepDuplicatesInMaxHeap() {
-        ComparatorPriorityQueue<Integer> queue = ComparatorPriorityQueue.maxHeap();
+        OrderedPriorityQueue<Integer> queue = OrderedPriorityQueue.maxHeap();
         queue.add(3);
         queue.add(9);
         queue.add(3);
         queue.add(9);
 
-        assertEquals(List.of(9, 9, 3, 3), drain(queue));
+        assertEquals(List.of(9, 9, 3, 3), pollAll(queue));
     }
 
     @Test
     @DisplayName("Пустая max-куча бросает исключение на poll и peek")
     void shouldThrowWhenMaxHeapIsEmpty() {
-        ComparatorPriorityQueue<Integer> queue = ComparatorPriorityQueue.maxHeap();
+        OrderedPriorityQueue<Integer> queue = OrderedPriorityQueue.maxHeap();
 
         assertThrows(NoSuchElementException.class, () -> queue.poll());
         assertThrows(NoSuchElementException.class, () -> queue.peek());
@@ -137,7 +140,7 @@ class ComparatorPriorityQueueTest {
     @Test
     @DisplayName("Max-куча из одного элемента")
     void shouldWorkWithSingleElementInMaxHeap() {
-        ComparatorPriorityQueue<Integer> queue = ComparatorPriorityQueue.maxHeap();
+        OrderedPriorityQueue<Integer> queue = OrderedPriorityQueue.maxHeap();
         queue.add(42);
 
         assertEquals(42, queue.poll());
@@ -147,7 +150,7 @@ class ComparatorPriorityQueueTest {
     @Test
     @DisplayName("Добавление null запрещено и для очереди с компаратором")
     void shouldThrowWhenAddingNullWithComparator() {
-        ComparatorPriorityQueue<Integer> queue = ComparatorPriorityQueue.maxHeap();
+        OrderedPriorityQueue<Integer> queue = OrderedPriorityQueue.maxHeap();
 
         assertThrows(IllegalArgumentException.class, () -> queue.add(null));
         assertEquals(0, queue.size());
