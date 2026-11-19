@@ -1,8 +1,8 @@
 # Отчёт по задаче 2A. Хеш-таблица с линейным пробированием
 
 **Студент:** Кузнецов Д.А., группа ИУ3-32Б, вариант 25
-**Код:** `src/main/java/ru/bmstu/lab02/task_02a/HashMapCustom.java`
-**Тесты:** `src/test/java/ru/bmstu/lab02/task_02a/HashMapCustomTest.java`
+**Код:** `src/main/java/ru/bmstu/lab02/task2a/HashMapCustom.java`
+**Тесты:** `src/test/java/ru/bmstu/lab02/task2a/HashMapCustomTest.java`
 
 ## Условие
 
@@ -138,5 +138,6 @@ return -1;
 
 ### Покрытие
 
-Покрытие строк класса `HashMapCustom` тестами задачи 2A: **71 из 71 строки (100 %)**, включая обе ветки
+Покрытие считает JaCoCo (`mvn clean verify`, порог в `pom.xml` — не меньше 80 % строк каждого класса).
+Строки класса `HashMapCustom` тестами задачи 2A: **71 из 71 строки (100 %)**, включая обе ветки
 выбора ёмкости в `rebuild` и обе ветки `indexFor`.
