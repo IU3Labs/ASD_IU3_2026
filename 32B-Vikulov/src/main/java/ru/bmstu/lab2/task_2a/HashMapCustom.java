@@ -27,8 +27,10 @@ public class HashMapCustom<K, V> {
     /** Ёмкость таблицы, созданной конструктором без параметров. */
     public static final int DEFAULT_CAPACITY = 16;
 
-    /** Максимальная доля занятых ячеек (живые элементы + маркеры {@code DELETED}). */
+    /** Максимальная доля ячеек с живыми элементами. */
     public static final double MAX_LOAD_FACTOR = 0.75;
+
+    private static final double MAX_OCCUPIED_FACTOR = 0.875;
 
     /** Маркер удалённой ячейки; сравнивается по ссылке, поэтому не совпадёт ни с одним ключом. */
     private static final Object DELETED = new Object();
@@ -202,20 +204,18 @@ public class HashMapCustom<K, V> {
     }
 
     /**
-     * Перед вставкой проверяет загрузку. Если после вставки непустых ячеек станет больше
-     * {@code capacity · MAX_LOAD_FACTOR}: при большом числе живых элементов ёмкость удваивается, иначе
-     * загрузку создают маркеры {@code DELETED}, и таблица перестраивается в той же ёмкости, чтобы их убрать.
+     * Удваивает таблицу при росте числа живых ключей. Маркеры убираются отдельно, когда их достаточно,
+     * чтобы стоимость очистки распределилась между предыдущими вставками и удалениями.
      */
     private void ensureRoomForInsert() {
-        double threshold = keys.length * MAX_LOAD_FACTOR;
-        if (occupied + 1 <= threshold) {
-            return;
+        if (size + 1 > keys.length * MAX_LOAD_FACTOR) {
+            rehash(keys.length * 2);
+        } else if (occupied + 1 > keys.length * MAX_OCCUPIED_FACTOR) {
+            rehash(keys.length);
         }
-        int newCapacity = size + 1 > threshold ? keys.length * 2 : keys.length;
-        rehash(newCapacity);
     }
 
-    /** Переносит все живые элементы в новые массивы; маркеры {@code DELETED} при этом исчезают. O(capacity). */
+    /** Переносит живые элементы в новые массивы. O(capacity) в среднем при равномерном хешировании. */
     private void rehash(int newCapacity) {
         Object[] oldKeys = keys;
         Object[] oldValues = values;
