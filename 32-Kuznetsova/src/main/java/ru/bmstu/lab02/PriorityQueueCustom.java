@@ -6,43 +6,40 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 /**
- * Очередь с приоритетом на основе двоичной кучи в динамическом массиве.
+ * Очередь с приоритетом на основе двоичной кучи, которая хранится в массиве.
  *
- * <p>Во главе очереди находится наименьший элемент относительно {@link Comparator}; если компаратор не задан,
- * используется естественный порядок. Чтобы получить max-heap, достаточно передать
- * {@code Comparator.reverseOrder()}.
+ * <p>Наверху всегда лежит наименьший элемент. Порядок можно поменять компаратором:
+ * с {@code Comparator.reverseOrder()} получится max-heap. Элементы {@code null} не поддерживаются.
  *
- * <p>Индексация: потомки узла {@code i} — {@code 2*i + 1} и {@code 2*i + 2}, родитель — {@code (i - 1) / 2}.
- * Элементы {@code null} не поддерживаются.
+ * <p>Для узла с номером {@code i}: дети - {@code 2*i + 1} и {@code 2*i + 2}, родитель - {@code (i - 1) / 2}.
  *
  * @param <T> тип элементов
  */
 public class PriorityQueueCustom<T> {
 
-    private static final int DEFAULT_CAPACITY = 16;
-    private static final int GROWTH_FACTOR = 2;
+    private static final int START_CAPACITY = 16;
 
     private Object[] heap;
     private int size;
     private final Comparator<? super T> comparator;
 
-    /** Создаёт пустую очередь с естественным порядком элементов. */
+    /** Пустая очередь, элементы сравниваются через {@code compareTo}. */
     public PriorityQueueCustom() {
         this((Comparator<? super T>) null);
     }
 
     /**
-     * Создаёт пустую очередь с заданным порядком.
+     * Пустая очередь с заданным порядком.
      *
-     * @param comparator порядок элементов; {@code null} означает естественный порядок
+     * @param comparator порядок элементов, {@code null} - естественный порядок
      */
     public PriorityQueueCustom(Comparator<? super T> comparator) {
         this.comparator = comparator;
-        this.heap = new Object[DEFAULT_CAPACITY];
+        this.heap = new Object[START_CAPACITY];
     }
 
     /**
-     * Строит кучу из массива за O(n); исходный массив не изменяется.
+     * Строит кучу из массива за O(n). Сам массив не меняется.
      *
      * @param array исходные элементы
      */
@@ -51,119 +48,106 @@ public class PriorityQueueCustom<T> {
     }
 
     /**
-     * Строит кучу из массива за O(n) методом Флойда; исходный массив не изменяется.
+     * Строит кучу из массива за O(n). Сам массив не меняется.
      *
      * @param array      исходные элементы
-     * @param comparator порядок элементов; {@code null} означает естественный порядок
+     * @param comparator порядок элементов, {@code null} - естественный порядок
      */
     public PriorityQueueCustom(T[] array, Comparator<? super T> comparator) {
         Objects.requireNonNull(array, "array");
         this.comparator = comparator;
-        this.heap = new Object[Math.max(DEFAULT_CAPACITY, array.length)];
+        this.heap = new Object[Math.max(START_CAPACITY, array.length)];
         for (T item : array) {
             checkItem(item);
-            heap[size++] = item;
+            heap[size] = item;
+            size++;
         }
-        // Листья (индексы >= size / 2) уже являются кучами из одного элемента, поэтому идём от последнего
-        // внутреннего узла к корню: суммарная работа сходится к O(n), а не O(n log n).
+        // Листья уже являются кучами из одного элемента, поэтому идём от последнего узла с детьми к корню.
         for (int i = size / 2 - 1; i >= 0; i--) {
             siftDown(i);
         }
     }
 
     /**
-     * Добавляет элемент за O(log n) (амортизированно, с учётом расширения массива).
+     * Добавляет элемент, O(log n).
      *
-     * @param item добавляемый элемент, не {@code null}
+     * @param item элемент, не {@code null}
      */
     public void add(T item) {
         checkItem(item);
         if (size == heap.length) {
-            heap = Arrays.copyOf(heap, heap.length * GROWTH_FACTOR);
+            heap = Arrays.copyOf(heap, heap.length * 2);
         }
         heap[size] = item;
-        siftUp(size);
         size++;
+        siftUp(size - 1);
     }
 
     /**
-     * Извлекает и возвращает минимальный элемент за O(log n).
+     * Достаёт наименьший элемент, O(log n).
      *
-     * @return минимальный элемент
+     * @return наименьший элемент
      * @throws NoSuchElementException если очередь пуста
      */
     public T poll() {
-        if (size == 0) {
-            throw new NoSuchElementException("Очередь пуста");
-        }
-        T result = at(0);
+        T min = peek();
+        swap(0, size - 1);
+        heap[size - 1] = null;
         size--;
-        Object last = heap[size];
-        heap[size] = null;
-        if (size > 0) {
-            heap[0] = last;
-            siftDown(0);
-        }
-        return result;
+        siftDown(0);
+        return min;
     }
 
     /**
-     * Возвращает минимальный элемент без удаления за O(1).
+     * Смотрит на наименьший элемент, не удаляя его, O(1).
      *
-     * @return минимальный элемент
+     * @return наименьший элемент
      * @throws NoSuchElementException если очередь пуста
      */
     public T peek() {
         if (size == 0) {
             throw new NoSuchElementException("Очередь пуста");
         }
-        return at(0);
+        return get(0);
     }
 
     /**
-     * Удаляет первое (в порядке расположения в массиве) вхождение элемента за O(n).
+     * Удаляет первое найденное вхождение элемента, O(n).
      *
      * @param item удаляемый элемент
-     * @return {@code true}, если элемент был найден и удалён
+     * @return {@code true}, если элемент нашёлся и был удалён
      */
     public boolean remove(T item) {
-        if (item == null) {
-            return false;
-        }
         int index = indexOf(item);
-        if (index < 0) {
+        if (index == -1) {
             return false;
         }
+        // Ставим на место удаляемого последний элемент, а потом чиним кучу в обе стороны:
+        // он может оказаться и меньше родителя, и больше детей.
+        swap(index, size - 1);
+        heap[size - 1] = null;
         size--;
-        Object last = heap[size];
-        heap[size] = null;
-        if (index == size) {
-            return true;
-        }
-        heap[index] = last;
-        // Последний элемент мог оказаться как меньше родителя нового места, так и больше его потомков:
-        // сначала просеиваем вниз, и если он остался на месте — вверх.
-        siftDown(index);
-        if (heap[index] == last) {
+        if (index < size) {
+            siftDown(index);
             siftUp(index);
         }
         return true;
     }
 
-    /** Возвращает число элементов за O(1). */
+    /** Сколько элементов в очереди, O(1). */
     public int size() {
         return size;
     }
 
-    /** Проверяет, пуста ли очередь, за O(1). */
+    /** Пуста ли очередь, O(1). */
     public boolean isEmpty() {
         return size == 0;
     }
 
-    /** Проверяет инвариант кучи (только для тестов): ни один элемент не меньше своего родителя. */
+    /** Проверка для тестов: каждый элемент не меньше своего родителя. */
     boolean isHeap() {
         for (int i = 1; i < size; i++) {
-            if (compare(at(i), at((i - 1) / 2)) < 0) {
+            if (compare(get(i), get((i - 1) / 2)) < 0) {
                 return false;
             }
         }
@@ -171,6 +155,9 @@ public class PriorityQueueCustom<T> {
     }
 
     private int indexOf(T item) {
+        if (item == null) {
+            return -1;
+        }
         for (int i = 0; i < size; i++) {
             if (item.equals(heap[i])) {
                 return i;
@@ -179,44 +166,48 @@ public class PriorityQueueCustom<T> {
         return -1;
     }
 
-    /** Поднимает элемент в позиции {@code index}, пока он меньше родителя. */
+    /** Пока элемент меньше родителя, меняем их местами. */
     private void siftUp(int index) {
-        Object item = heap[index];
         int current = index;
         while (current > 0) {
             int parent = (current - 1) / 2;
-            if (compare(cast(item), at(parent)) >= 0) {
-                break;
+            if (compare(get(current), get(parent)) >= 0) {
+                return;
             }
-            heap[current] = heap[parent];
+            swap(current, parent);
             current = parent;
         }
-        heap[current] = item;
     }
 
-    /** Опускает элемент в позиции {@code index}, пока он больше хотя бы одного из потомков. */
+    /** Пока элемент больше одного из детей, меняем его с меньшим ребёнком. */
     private void siftDown(int index) {
-        Object item = heap[index];
         int current = index;
-        int firstLeaf = size / 2;
-        while (current < firstLeaf) {
-            int child = 2 * current + 1;
-            int right = child + 1;
-            if (right < size && compare(at(right), at(child)) < 0) {
-                child = right;
+        while (true) {
+            int left = 2 * current + 1;
+            int right = 2 * current + 2;
+            int smallest = current;
+            if (left < size && compare(get(left), get(smallest)) < 0) {
+                smallest = left;
             }
-            if (compare(cast(item), at(child)) <= 0) {
-                break;
+            if (right < size && compare(get(right), get(smallest)) < 0) {
+                smallest = right;
             }
-            heap[current] = heap[child];
-            current = child;
+            if (smallest == current) {
+                return;
+            }
+            swap(current, smallest);
+            current = smallest;
         }
-        heap[current] = item;
+    }
+
+    private void swap(int first, int second) {
+        Object temp = heap[first];
+        heap[first] = heap[second];
+        heap[second] = temp;
     }
 
     private void checkItem(T item) {
         Objects.requireNonNull(item, "Элементы null не поддерживаются");
-        // Без компаратора ошибка типа проявилась бы только при втором add; сообщаем о ней сразу.
         if (comparator == null && !(item instanceof Comparable)) {
             throw new ClassCastException(item.getClass().getName() + " не реализует Comparable");
         }
@@ -231,12 +222,7 @@ public class PriorityQueueCustom<T> {
     }
 
     @SuppressWarnings("unchecked")
-    private T at(int index) {
+    private T get(int index) {
         return (T) heap[index];
-    }
-
-    @SuppressWarnings("unchecked")
-    private T cast(Object item) {
-        return (T) item;
     }
 }
