@@ -6,10 +6,9 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.RandomAccess;
 
 /** Неизменяемый список на собственном массиве для результатов задач 3A и 3C. */
-public final class ResultList<T> extends ReadOnlyCollection<T> implements List<T>, RandomAccess {
+public final class ResultList<T> extends ReadOnlyCollection<T> implements List<T> {
     private final Object[] elements;
 
     /** Создаёт неизменяемый результат из переданных элементов. */
@@ -27,7 +26,9 @@ public final class ResultList<T> extends ReadOnlyCollection<T> implements List<T
     @Override
     @SuppressWarnings("unchecked")
     public T get(int index) {
-        Objects.checkIndex(index, size());
+        if (index < 0 || index >= size()) {
+            throw new IndexOutOfBoundsException();
+        }
         return (T) elements[index];
     }
 
@@ -73,23 +74,33 @@ public final class ResultList<T> extends ReadOnlyCollection<T> implements List<T
     /** {@inheritDoc} */
     @Override
     public ListIterator<T> listIterator(int index) {
-        Objects.checkFromToIndex(index, index, size());
+        if (index < 0 || index > size()) {
+            throw new IndexOutOfBoundsException();
+        }
         return new Cursor(index);
     }
 
     /** {@inheritDoc} */
     @Override
     public List<T> subList(int fromIndex, int toIndex) {
-        Objects.checkFromToIndex(fromIndex, toIndex, size());
+        if (fromIndex < 0 || toIndex > size() || fromIndex > toIndex) {
+            throw new IndexOutOfBoundsException();
+        }
         Object[] result = new Object[toIndex - fromIndex];
-        System.arraycopy(elements, fromIndex, result, 0, result.length);
+        for (int i = 0; i < result.length; i++) {
+            result[i] = elements[fromIndex + i];
+        }
         return new ResultList<>(result);
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof List<?> list) || list.size() != size()) {
+        if (!(other instanceof List)) {
+            return false;
+        }
+        List<?> list = (List<?>) other;
+        if (list.size() != size()) {
             return false;
         }
         Iterator<?> iterator = list.iterator();

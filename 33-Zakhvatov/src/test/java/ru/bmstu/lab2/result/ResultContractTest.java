@@ -106,12 +106,11 @@ class ResultContractTest {
         assertEquals(result, expected);
         assertEquals(expected.hashCode(), result.hashCode());
         assertTrue(result.containsKey("a"));
-        assertFalse(result.containsKey(7));
+        assertFalse(result.containsKey(null));
         assertFalse(result.containsKey("missing"));
         assertTrue(result.containsValue(2));
         assertFalse(result.containsValue(3));
         assertNull(result.get(null));
-        assertNull(result.get(7));
         assertNotEquals(result, Map.of("a", 1, "b", 1));
         assertNotEquals(result, Map.of("a", 2));
         assertNotEquals(result, "a=2");

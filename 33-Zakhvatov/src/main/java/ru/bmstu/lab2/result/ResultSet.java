@@ -2,7 +2,7 @@ package ru.bmstu.lab2.result;
 
 import java.util.Set;
 
-/** Неизменяемое представление уже уникальных ключей или пар собственной таблицы. */
+/** Множество уже уникальных элементов. */
 public final class ResultSet<T> extends ReadOnlyCollection<T> implements Set<T> {
     private final ResultList<T> items;
 
@@ -25,7 +25,11 @@ public final class ResultSet<T> extends ReadOnlyCollection<T> implements Set<T> 
     /** {@inheritDoc} */
     @Override
     public boolean equals(Object other) {
-        return other instanceof Set<?> set && set.size() == size() && containsAll(set);
+        if (!(other instanceof Set)) {
+            return false;
+        }
+        Set<?> set = (Set<?>) other;
+        return set.size() == size() && containsAll(set);
     }
 
     /** {@inheritDoc} */

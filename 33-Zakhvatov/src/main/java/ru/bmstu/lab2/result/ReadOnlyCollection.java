@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
 
-/** Общие операции неизменяемых результатов без библиотечного хранилища коллекций. */
+/** Общие методы для списка и множества. */
 abstract class ReadOnlyCollection<T> implements Collection<T> {
     abstract T elementAt(int index);
 
