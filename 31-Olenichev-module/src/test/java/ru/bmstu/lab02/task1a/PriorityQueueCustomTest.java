@@ -49,4 +49,34 @@ class PriorityQueueCustomTest {
         assertEquals(1, queue.size());
         assertEquals(7, queue.peek());
     }
+        @Test
+    void shouldThrowExceptionWhenPollingEmptyQueue() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        assertThrows(NoSuchElementException.class, queue::poll);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenPeekingEmptyQueue() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        assertThrows(NoSuchElementException.class, queue::peek);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAddingNull() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        assertThrows(IllegalArgumentException.class, () -> queue.add(null));
+    }
+
+    @Test
+    void shouldHandleDuplicateElements() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        queue.add(2);
+        queue.add(2);
+        queue.add(2);
+        assertEquals(2, queue.poll());
+        assertEquals(2, queue.poll());
+        assertEquals(2, queue.poll());
+        assertTrue(queue.isEmpty());
+    }
+
 }
