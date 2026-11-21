@@ -1,6 +1,6 @@
 # ЛР2: результаты бенчмарков
 
-Дата: 2026-11-21T21:51:46.803470+03:00[Europe/Moscow].
+Дата: 2026-11-21T22:01:38.253345+03:00[Europe/Moscow].
 
 JDK: 21.0.13.0.3; Homebrew.
 
@@ -20,28 +20,28 @@ GC и работа ОС могут влиять на разброс; это уч
 
 | Структура | Операция | N | Среднее, мс | σ, мс | Выделено, МиБ |
 |---|---|---:|---:|---:|---:|
-| PriorityQueueCustom | add + poll | 10000 | 1.056 | 0.090 | 0.125 |
-| java.util.PriorityQueue | add + poll | 10000 | 0.950 | 0.081 | 0.151 |
-| HashMapCustom LINEAR | put + get + remove | 10000 | 0.998 | 0.081 | 0.250 |
-| HashMapCustom QUADRATIC | put + get + remove | 10000 | 0.768 | 0.070 | 0.250 |
-| java.util.HashMap | put + get + remove | 10000 | 0.614 | 0.125 | 0.430 |
-| PriorityQueueCustom | add + poll | 50000 | 5.959 | 0.117 | 0.500 |
-| java.util.PriorityQueue | add + poll | 50000 | 6.019 | 0.112 | 0.763 |
-| HashMapCustom LINEAR | put + get + remove | 50000 | 3.609 | 0.143 | 2.000 |
-| HashMapCustom QUADRATIC | put + get + remove | 50000 | 3.645 | 0.243 | 2.000 |
-| java.util.HashMap | put + get + remove | 50000 | 2.683 | 0.204 | 2.526 |
-| PriorityQueueCustom | add + poll | 100000 | 14.731 | 1.520 | 1.000 |
-| java.util.PriorityQueue | add + poll | 100000 | 14.529 | 2.860 | 1.716 |
-| HashMapCustom LINEAR | put + get + remove | 100000 | 11.389 | 11.042 | 4.000 |
-| HashMapCustom QUADRATIC | put + get + remove | 100000 | 7.797 | 0.253 | 4.000 |
-| java.util.HashMap | put + get + remove | 100000 | 6.352 | 3.886 | 5.052 |
+| PriorityQueueCustom | add + poll | 10000 | 1.165 | 0.102 | 0.125 |
+| java.util.PriorityQueue | add + poll | 10000 | 1.089 | 0.139 | 0.151 |
+| HashMapCustom LINEAR | put + get + remove | 10000 | 1.093 | 0.274 | 0.250 |
+| HashMapCustom QUADRATIC | put + get + remove | 10000 | 0.845 | 0.117 | 0.250 |
+| java.util.HashMap | put + get + remove | 10000 | 0.736 | 0.093 | 0.430 |
+| PriorityQueueCustom | add + poll | 50000 | 6.405 | 0.352 | 0.500 |
+| java.util.PriorityQueue | add + poll | 50000 | 6.254 | 0.332 | 0.763 |
+| HashMapCustom LINEAR | put + get + remove | 50000 | 3.784 | 0.182 | 2.000 |
+| HashMapCustom QUADRATIC | put + get + remove | 50000 | 4.007 | 0.848 | 2.000 |
+| java.util.HashMap | put + get + remove | 50000 | 7.175 | 13.721 | 2.526 |
+| PriorityQueueCustom | add + poll | 100000 | 15.276 | 2.442 | 1.000 |
+| java.util.PriorityQueue | add + poll | 100000 | 15.331 | 3.124 | 1.716 |
+| HashMapCustom LINEAR | put + get + remove | 100000 | 14.465 | 9.672 | 4.000 |
+| HashMapCustom QUADRATIC | put + get + remove | 100000 | 9.088 | 0.869 | 4.000 |
+| java.util.HashMap | put + get + remove | 100000 | 5.948 | 0.526 | 5.052 |
 
 ## 1B: min-heap и max-heap, 100 000 одинаковых случайных чисел
 
 | Режим | Среднее, мс | σ, мс | Выделено, МиБ |
 |---|---:|---:|---:|
-| min-heap | 13.600 | 0.290 | 1.000 |
-| max-heap | 13.659 | 0.254 | 1.000 |
+| min-heap | 15.893 | 0.722 | 1.000 |
+| max-heap | 14.375 | 0.640 | 1.000 |
 
 Оба режима выполняют add + poll и имеют O(n log n). Разница определяется порядком
 сравнений, ветвлениями, работой компаратора и шумом измерения, а не сменой асимптотики.
@@ -50,8 +50,8 @@ GC и работа ОС могут влиять на разброс; это уч
 
 | Способ | Среднее, мс | σ, мс | Выделено, МиБ |
 |---|---:|---:|---:|
-| Последовательные add | 1.386 | 0.040 | 1.000 |
-| Bottom-up heapify | 1.282 | 0.075 | 0.382 |
+| Последовательные add | 1.400 | 0.125 | 1.000 |
+| Bottom-up heapify | 1.173 | 0.136 | 0.382 |
 
 Извлечение исключено из этого замера. Heapify имеет O(n), последовательные add —
 O(n log n) в худшем случае; на случайных данных add часто требует мало подъёмов.
@@ -74,8 +74,8 @@ k = 100; корректность проверена сравнением все
 
 | Метод | Среднее, мс | σ, мс | Выделено, МиБ |
 |---|---:|---:|---:|
-| Собственная куча O(n log k) | 2.189 | 0.074 | 0.001 |
-| Полная сортировка O(n log n) | 237.737 | 78.069 | 11.536 |
+| Собственная куча O(n log k) | 2.706 | 0.136 | 0.002 |
+| Полная сортировка O(n log n) | 201.797 | 4.776 | 11.536 |
 
 ## 3B: частота слов, текст около 1 МиБ
 
@@ -83,8 +83,8 @@ k = 100; корректность проверена сравнением все
 
 | Таблица | Среднее, мс | σ, мс | Выделено, МиБ |
 |---|---:|---:|---:|
-| HashMapCustom | 11.825 | 0.462 | 7.799 |
-| java.util.HashMap | 11.293 | 1.011 | 7.799 |
+| HashMapCustom | 14.506 | 1.482 | 7.799 |
+| java.util.HashMap | 12.636 | 0.701 | 7.799 |
 
 10 самых частых слов (при равенстве — по алфавиту):
 
@@ -107,15 +107,15 @@ k = 100; корректность проверена сравнением все
 
 | Метод | N | Среднее, мс | σ, мс | Выделено, МиБ |
 |---|---:|---:|---:|---:|
-| Собственная таблица + List | 10000 | 0.328 | 0.018 | 0.103 |
-| new LinkedHashSet<>(items) | 10000 | 0.227 | 0.093 | 0.156 |
-| LinkedHashSet + ArrayList (тот же List-контракт) | 10000 | 0.255 | 0.117 | 0.175 |
-| Собственная таблица + List | 50000 | 0.936 | 0.093 | 0.422 |
-| new LinkedHashSet<>(items) | 50000 | 0.693 | 0.052 | 0.969 |
-| LinkedHashSet + ArrayList (тот же List-контракт) | 50000 | 0.747 | 0.024 | 1.062 |
-| Собственная таблица + List | 100000 | 1.982 | 0.473 | 0.844 |
-| new LinkedHashSet<>(items) | 100000 | 1.610 | 0.269 | 1.936 |
-| LinkedHashSet + ArrayList (тот же List-контракт) | 100000 | 1.718 | 0.310 | 2.124 |
+| Собственная таблица + List | 10000 | 0.348 | 0.020 | 0.113 |
+| new LinkedHashSet<>(items) | 10000 | 0.256 | 0.118 | 0.156 |
+| LinkedHashSet + ArrayList (тот же List-контракт) | 10000 | 0.256 | 0.077 | 0.175 |
+| Собственная таблица + List | 50000 | 1.409 | 0.504 | 0.469 |
+| new LinkedHashSet<>(items) | 50000 | 0.792 | 0.112 | 0.969 |
+| LinkedHashSet + ArrayList (тот же List-контракт) | 50000 | 0.928 | 0.359 | 1.062 |
+| Собственная таблица + List | 100000 | 2.179 | 0.802 | 0.938 |
+| new LinkedHashSet<>(items) | 100000 | 1.737 | 0.753 | 1.936 |
+| LinkedHashSet + ArrayList (тот же List-контракт) | 100000 | 1.748 | 0.508 | 2.124 |
 
 ## Выводы
 
