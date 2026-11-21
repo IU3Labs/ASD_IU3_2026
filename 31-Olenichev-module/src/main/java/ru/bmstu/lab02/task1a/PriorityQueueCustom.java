@@ -86,6 +86,42 @@ public class PriorityQueueCustom<T extends Comparable<T>> {
         heap = newHeap;
     }
 
+        /**
+     * Извлекает и возвращает минимальный элемент за O(log n).
+     *
+     * @return минимальный элемент
+     * @throws NoSuchElementException если очередь пуста
+     */
+    @SuppressWarnings("unchecked")
+    public T poll() {
+        if (isEmpty()) {
+            throw new NoSuchElementException("Queue is empty");
+        }
+        T result = (T) heap;
+        heap = heap[size - 1];
+        heap[size - 1] = null;
+        size--;
+        if (size > 0) {
+            siftDown(0);
+        }
+        return result;
+    }
+
+    /**
+     * Возвращает минимальный элемент без удаления за O(1).
+     *
+     * @return минимальный элемент
+     * @throws NoSuchElementException если очередь пуста
+     */
+    @SuppressWarnings("unchecked")
+    public T peek() {
+        if (isEmpty()) {
+            throw new NoSuchElementException("Queue is empty");
+        }
+        return (T) heap;
+    }
+
+
 
 
 }
