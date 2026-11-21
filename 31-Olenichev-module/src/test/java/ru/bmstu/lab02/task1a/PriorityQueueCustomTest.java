@@ -1,15 +1,22 @@
 package ru.bmstu.lab02.task1a;
 
+import java.util.NoSuchElementException;
+import java.util.Random;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Юнит-тесты для {@link PriorityQueueCustom} (задача 1A).
  */
 class PriorityQueueCustomTest {
+
+    private static final long RANDOM_SEED = 42L;
+    private static final int STRESS_TEST_SIZE = 10_000;
+    private static final int MAX_RANDOM_BOUND = 100_000;
 
     @Test
     void shouldAddAndPeekSingleElement() {
@@ -49,7 +56,8 @@ class PriorityQueueCustomTest {
         assertEquals(1, queue.size());
         assertEquals(7, queue.peek());
     }
-        @Test
+
+    @Test
     void shouldThrowExceptionWhenPollingEmptyQueue() {
         PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
         assertThrows(NoSuchElementException.class, queue::poll);
@@ -78,7 +86,8 @@ class PriorityQueueCustomTest {
         assertEquals(2, queue.poll());
         assertTrue(queue.isEmpty());
     }
-        @Test
+
+    @Test
     void shouldExpandArrayAutomaticallyWhenCapacityExceeded() {
         PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
         int totalElements = 100;
@@ -106,6 +115,4 @@ class PriorityQueueCustomTest {
         }
         assertTrue(queue.isEmpty());
     }
-
-
 }
