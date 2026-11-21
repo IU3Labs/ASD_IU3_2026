@@ -78,5 +78,34 @@ class PriorityQueueCustomTest {
         assertEquals(2, queue.poll());
         assertTrue(queue.isEmpty());
     }
+        @Test
+    void shouldExpandArrayAutomaticallyWhenCapacityExceeded() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        int totalElements = 100;
+        for (int i = totalElements; i >= 1; i--) {
+            queue.add(i);
+        }
+        assertEquals(totalElements, queue.size());
+        for (int expected = 1; expected <= totalElements; expected++) {
+            assertEquals(expected, queue.poll());
+        }
+    }
+
+    @Test
+    void shouldExtractInNonDecreasingOrderOnStressDataset() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        Random random = new Random(RANDOM_SEED);
+        for (int i = 0; i < STRESS_TEST_SIZE; i++) {
+            queue.add(random.nextInt(MAX_RANDOM_BOUND));
+        }
+        int previous = Integer.MIN_VALUE;
+        for (int i = 0; i < STRESS_TEST_SIZE; i++) {
+            int current = queue.poll();
+            assertTrue(current >= previous);
+            previous = current;
+        }
+        assertTrue(queue.isEmpty());
+    }
+
 
 }
