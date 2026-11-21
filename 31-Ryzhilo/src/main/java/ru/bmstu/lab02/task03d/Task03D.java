@@ -20,7 +20,7 @@ public final class Task03D {
             indices.add(right);
             int left = right - k + 1;
             if (left >= 0) {
-                // Индекс вне окна можно оставить в куче до его подъёма в корень.
+                // Удаляем устаревшие индексы только из корня, когда они становятся минимумами.
                 while (indices.peek() < left) {
                     indices.poll();
                 }

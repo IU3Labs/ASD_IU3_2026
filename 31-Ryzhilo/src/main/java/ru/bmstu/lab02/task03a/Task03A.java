@@ -21,6 +21,7 @@ public final class Task03A {
         }
         PriorityQueueCustom<T> largest = new PriorityQueueCustom<>();
         for (T item : input) {
+            // В куче остаются только k лучших элементов. Корень — текущий минимум.
             if (largest.size() < count) {
                 largest.add(item);
             } else if (item.compareTo(largest.peek()) > 0) {

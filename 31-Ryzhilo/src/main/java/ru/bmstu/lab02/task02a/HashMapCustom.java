@@ -103,6 +103,7 @@ public class HashMapCustom<K, V> {
     private int findSlot(K key, int[] probeCount) {
         int index = (int) (Math.abs((long) key.hashCode()) % capacity());
         int firstDeleted = -1;
+        // Ищем ключ до первой пустой ячейки, но запоминаем первый DELETED для вставки.
         for (int step = 0; step < capacity(); step++) {
             int slot = probe(index, step);
             if (probeCount != null) {
@@ -143,6 +144,7 @@ public class HashMapCustom<K, V> {
 
     @SuppressWarnings("unchecked")
     private void rehash(int newCapacity) {
+        // Переносим только действующие записи, отбрасывая старые маркеры DELETED.
         Object[] oldKeys = keys;
         Object[] oldValues = values;
         keys = new Object[newCapacity];

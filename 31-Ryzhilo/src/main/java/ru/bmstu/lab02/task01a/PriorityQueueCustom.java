@@ -37,6 +37,8 @@ public class PriorityQueueCustom<T> {
 
     /** Просеивает внутренние узлы снизу вверх. */
     private void buildHeap() {
+        // Листья уже являются корректными кучами, поэтому начинаем с последнего
+        // внутреннего узла и двигаемся к корню.
         for (int index = size / 2 - 1; index >= 0; index--) {
             siftDown(index);
         }
@@ -95,6 +97,7 @@ public class PriorityQueueCustom<T> {
     }
 
     private void siftUp(int index) {
+        // Новый элемент сравнивается с родителем, пока не найдёт подходящее место.
         while (index > 0) {
             int parent = (index - 1) / 2;
             if (compare(index, parent) >= 0) {
@@ -106,6 +109,7 @@ public class PriorityQueueCustom<T> {
     }
 
     private void siftDown(int index) {
+        // На каждом шаге выбираем меньшего ребёнка, чтобы сохранить свойство min-heap.
         while (index < size / 2) {
             int child = 2 * index + 1;
             int right = child + 1;
