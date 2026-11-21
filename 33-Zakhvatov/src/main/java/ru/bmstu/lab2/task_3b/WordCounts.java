@@ -2,13 +2,12 @@ package ru.bmstu.lab2.task_3b;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import ru.bmstu.lab2.result.ResultList;
 import ru.bmstu.lab2.result.ResultSet;
 import ru.bmstu.lab2.task_2a_2b.HashMapCustom;
 
-/** Неизменяемый Map-адаптер над собственной таблицей для контракта задачи 3B. */
+/** Результат подсчёта слов. */
 final class WordCounts implements Map<String, Integer> {
     private final HashMapCustom<String, Integer> counts;
     private final ResultList<String> words;
@@ -33,20 +32,26 @@ final class WordCounts implements Map<String, Integer> {
     /** {@inheritDoc} */
     @Override
     public boolean containsKey(Object key) {
-        return key instanceof String word && counts.containsKey(word);
+        if (key instanceof String) {
+            return counts.containsKey((String) key);
+        }
+        return false;
     }
 
     /** {@inheritDoc} */
     @Override
     public Integer get(Object key) {
-        return key instanceof String word ? counts.get(word) : null;
+        if (key instanceof String) {
+            return counts.get((String) key);
+        }
+        return null;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean containsValue(Object value) {
         for (String word : words) {
-            if (Objects.equals(counts.get(word), value)) {
+            if (counts.get(word).equals(value)) {
                 return true;
             }
         }
@@ -83,11 +88,15 @@ final class WordCounts implements Map<String, Integer> {
     /** {@inheritDoc} */
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof Map<?, ?> map) || map.size() != size()) {
+        if (!(other instanceof Map)) {
+            return false;
+        }
+        Map<?, ?> map = (Map<?, ?>) other;
+        if (map.size() != size()) {
             return false;
         }
         for (String word : words) {
-            if (!Objects.equals(counts.get(word), map.get(word))) {
+            if (!counts.get(word).equals(map.get(word))) {
                 return false;
             }
         }
@@ -130,42 +139,4 @@ final class WordCounts implements Map<String, Integer> {
         throw new UnsupportedOperationException("Результат неизменяемый");
     }
 
-    private record WordEntry(String word, Integer count) implements Entry<String, Integer> {
-        /** {@inheritDoc} */
-        @Override
-        public String getKey() {
-            return word;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public Integer getValue() {
-            return count;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public Integer setValue(Integer value) {
-            throw new UnsupportedOperationException("Результат неизменяемый");
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public boolean equals(Object other) {
-            return other instanceof Entry<?, ?> entry
-                    && Objects.equals(word, entry.getKey()) && Objects.equals(count, entry.getValue());
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public int hashCode() {
-            return word.hashCode() ^ count.hashCode();
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public String toString() {
-            return word + "=" + count;
-        }
-    }
 }
