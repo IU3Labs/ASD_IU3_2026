@@ -1,9 +1,7 @@
 package ru.bmstu.lab2.task_1a_1b_1d;
 
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 
 /**
  * Задачи 1A, 1B, 1D: бинарная куча в расширяемом массиве с настраиваемым порядком.
@@ -19,7 +17,8 @@ public final class PriorityQueueCustom<T> {
 
     /** Создаёт пустую min-heap с естественным порядком. */
     public PriorityQueueCustom() {
-        this((Comparator<? super T>) null);
+        comparator = null;
+        elements = new Object[INITIAL_CAPACITY];
     }
 
     /** Создаёт очередь с заданным порядком; null означает естественный порядок. */
@@ -35,14 +34,23 @@ public final class PriorityQueueCustom<T> {
 
     /** Строит кучу за O(n) с заданным компаратором, копируя исходные элементы. */
     public PriorityQueueCustom(T[] array, Comparator<? super T> comparator) {
-        Objects.requireNonNull(array, "array");
-        this.comparator = comparator;
-        elements = Arrays.copyOf(array, Math.max(INITIAL_CAPACITY, array.length), Object[].class);
-        size = array.length;
-        for (T item : array) {
-            Objects.requireNonNull(item, "item");
+        if (array == null) {
+            throw new NullPointerException("array");
         }
-        // Листья уже являются кучами; восстанавливаем порядок снизу вверх.
+        this.comparator = comparator;
+        int capacity = INITIAL_CAPACITY;
+        if (array.length > capacity) {
+            capacity = array.length;
+        }
+        elements = new Object[capacity];
+        size = array.length;
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] == null) {
+                throw new NullPointerException("item");
+            }
+            elements[i] = array[i];
+        }
+        // листья просеивать не нужно
         for (int index = size / 2 - 1; index >= 0; index--) {
             siftDown(index);
         }
@@ -50,18 +58,22 @@ public final class PriorityQueueCustom<T> {
 
     /** Добавляет элемент за O(log n) амортизированно; расширение массива занимает O(n). */
     public void add(T item) {
-        Objects.requireNonNull(item, "item");
+        if (item == null) {
+            throw new NullPointerException("item");
+        }
         if (size == elements.length) {
-            elements = Arrays.copyOf(elements, Math.multiplyExact(elements.length, 2));
+            grow();
         }
         elements[size] = item;
-        siftUp(size++);
+        siftUp(size);
+        size++;
     }
 
     /** Извлекает первый по порядку элемент за O(log n); пустая очередь вызывает исключение. */
     public T poll() {
         T result = peek();
-        elements[0] = elements[--size];
+        size--;
+        elements[0] = elements[size];
         elements[size] = null;
         if (size > 0) {
             siftDown(0);
@@ -85,6 +97,14 @@ public final class PriorityQueueCustom<T> {
     /** Проверяет пустоту за O(1). */
     public boolean isEmpty() {
         return size == 0;
+    }
+
+    private void grow() {
+        Object[] bigger = new Object[elements.length * 2];
+        for (int i = 0; i < size; i++) {
+            bigger[i] = elements[i];
+        }
+        elements = bigger;
     }
 
     private void siftUp(int index) {
@@ -124,8 +144,10 @@ public final class PriorityQueueCustom<T> {
 
     @SuppressWarnings("unchecked")
     private int compare(T first, T second) {
-        return comparator == null
-                ? ((Comparable<? super T>) first).compareTo(second)
-                : comparator.compare(first, second);
+        if (comparator != null) {
+            return comparator.compare(first, second);
+        }
+        Comparable<? super T> value = (Comparable<? super T>) first;
+        return value.compareTo(second);
     }
 }

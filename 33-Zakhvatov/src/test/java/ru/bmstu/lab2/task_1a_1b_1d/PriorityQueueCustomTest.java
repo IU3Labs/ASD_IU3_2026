@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
@@ -95,11 +94,17 @@ class PriorityQueueCustomTest {
 
     @Test
     void shouldOrderNonComparableObjectsWithComparator() {
-        record Job(int priority) { }
-        PriorityQueueCustom<Job> queue = new PriorityQueueCustom<>(Comparator.comparingInt(Job::priority));
-        queue.add(new Job(4));
-        queue.add(new Job(1));
-        assertEquals(new Job(1), queue.poll());
+        Comparator<int[]> comparator = new Comparator<int[]>() {
+            /** {@inheritDoc} */
+            @Override
+            public int compare(int[] first, int[] second) {
+                return Integer.compare(first[0], second[0]);
+            }
+        };
+        PriorityQueueCustom<int[]> queue = new PriorityQueueCustom<>(comparator);
+        queue.add(new int[]{4});
+        queue.add(new int[]{1});
+        assertArrayEquals(new int[]{1}, queue.poll());
     }
 
     @Test
@@ -155,8 +160,12 @@ class PriorityQueueCustomTest {
 
     @Test
     void shouldMatchStandardQueueDuringMixedOperations() {
-        Random random = new Random(20261121);
-        for (Comparator<Integer> comparator : Arrays.<Comparator<Integer>>asList(null, Comparator.reverseOrder())) {
+        Random random = new Random(42);
+        for (int mode = 0; mode < 2; mode++) {
+            Comparator<Integer> comparator = null;
+            if (mode == 1) {
+                comparator = Comparator.reverseOrder();
+            }
             PriorityQueueCustom<Integer> actual = new PriorityQueueCustom<>(comparator);
             PriorityQueue<Integer> expected = new PriorityQueue<>(11, comparator);
             for (int operation = 0; operation < 10_000; operation++) {
@@ -181,12 +190,19 @@ class PriorityQueueCustomTest {
     @Test
     void shouldHeapifyWithLinearNumberOfComparisons() {
         Integer[] input = new Integer[100_000];
-        Arrays.setAll(input, index -> input.length - index);
+        for (int i = 0; i < input.length; i++) {
+            input[i] = input.length - i;
+        }
         int[] comparisons = {0};
-        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>(input, (first, second) -> {
-            comparisons[0]++;
-            return Integer.compare(first, second);
-        });
+        Comparator<Integer> comparator = new Comparator<Integer>() {
+            /** {@inheritDoc} */
+            @Override
+            public int compare(Integer first, Integer second) {
+                comparisons[0]++;
+                return Integer.compare(first, second);
+            }
+        };
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>(input, comparator);
         assertTrue(comparisons[0] < 2 * input.length, "Heapify должен использовать менее 2n сравнений");
         for (int expected = 1; expected <= input.length; expected++) {
             assertEquals(expected, queue.poll());
@@ -195,7 +211,9 @@ class PriorityQueueCustomTest {
 
     private Integer[] drain(PriorityQueueCustom<Integer> queue) {
         Integer[] result = new Integer[queue.size()];
-        Arrays.setAll(result, index -> queue.poll());
+        for (int i = 0; i < result.length; i++) {
+            result[i] = queue.poll();
+        }
         return result;
     }
 }
