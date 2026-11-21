@@ -1,6 +1,5 @@
 package ru.bmstu.lab2.task_2a_2b;
 
-import java.util.Objects;
 import ru.bmstu.lab2.result.ResultList;
 
 /**
@@ -34,21 +33,24 @@ public final class HashMapCustom<K, V> {
 
     /** Создаёт таблицу с выбранным пробированием и начальной ёмкостью 16. */
     public HashMapCustom(Probing probing) {
-        this.probing = Objects.requireNonNull(probing, "probing");
+        if (probing == null) {
+            throw new NullPointerException("probing");
+        }
+        this.probing = probing;
         keys = new Object[INITIAL_CAPACITY];
         values = new Object[INITIAL_CAPACITY];
     }
 
     /** Вставляет или обновляет пару; ожидаемо O(1) амортизированно при хороших хешах. */
     public void put(K key, V value) {
-        Objects.requireNonNull(key, "key");
+        checkKey(key);
         int index = findSlot(key, false);
         if (keys[index] != null && keys[index] != DELETED) {
             values[index] = value;
             return;
         }
         if (size + 1 > keys.length - keys.length / 4) {
-            rehash(Math.multiplyExact(keys.length, 2));
+            rehash(keys.length * 2);
             index = findSlot(key, false);
         } else if (size + deletedCount + 1 > keys.length - keys.length / 8) {
             // При 7/8 использованных ячеек убираем маркеры; запас 1/8 окупает очистку.
@@ -65,22 +67,25 @@ public final class HashMapCustom<K, V> {
 
     /** Возвращает значение или null; учитывает число проб для эксперимента 2B. */
     public V get(K key) {
-        Objects.requireNonNull(key, "key");
+        checkKey(key);
         getCount++;
         int index = findSlot(key, true);
-        return index < 0 || keys[index] == null || keys[index] == DELETED ? null : valueAt(index);
+        if (index < 0 || keys[index] == null || keys[index] == DELETED) {
+            return null;
+        }
+        return valueAt(index);
     }
 
     /** Проверяет наличие ключа независимо от его значения. */
     public boolean containsKey(K key) {
-        Objects.requireNonNull(key, "key");
+        checkKey(key);
         int index = findSlot(key, false);
         return index >= 0 && keys[index] != null && keys[index] != DELETED;
     }
 
     /** Удаляет пару, сохраняя цепочку пробирования маркером DELETED. */
     public boolean remove(K key) {
-        Objects.requireNonNull(key, "key");
+        checkKey(key);
         int index = findSlot(key, false);
         if (index < 0 || keys[index] == null || keys[index] == DELETED) {
             return false;
@@ -147,9 +152,17 @@ public final class HashMapCustom<K, V> {
     }
 
     private int probeIndex(int base, int step) {
-        // i + 2*i² переставляет все остатки по модулю 2^p (см. asymptotics.md).
-        long offset = probing == Probing.LINEAR ? step : step + 2L * step * step;
-        return (int) ((base + offset) & (keys.length - 1));
+        long offset = step;
+        if (probing == Probing.QUADRATIC) {
+            offset = step + 2L * step * step;
+        }
+        return (int) ((base + offset) % keys.length);
+    }
+
+    private void checkKey(K key) {
+        if (key == null) {
+            throw new NullPointerException("key");
+        }
     }
 
     private void rehash(int capacity) {

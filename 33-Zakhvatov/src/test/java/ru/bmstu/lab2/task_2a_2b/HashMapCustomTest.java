@@ -181,21 +181,18 @@ class HashMapCustomTest {
         Map<Integer, Integer> expected = new HashMap<>();
         for (int operation = 0; operation < 20_000; operation++) {
             int key = random.nextInt(1_000) - 500;
-            switch (random.nextInt(3)) {
-                case 0 -> {
-                    Integer value = random.nextInt(5) == 0 ? null : random.nextInt();
-                    expected.put(key, value);
-                    actual.put(key, value);
-                }
-                case 1 -> {
-                    boolean existed = expected.containsKey(key);
-                    expected.remove(key);
-                    assertEquals(existed, actual.remove(key));
-                }
-                default -> {
-                    assertEquals(expected.get(key), actual.get(key));
-                    assertEquals(expected.containsKey(key), actual.containsKey(key));
-                }
+            int action = random.nextInt(3);
+            if (action == 0) {
+                Integer value = random.nextInt(5) == 0 ? null : random.nextInt();
+                expected.put(key, value);
+                actual.put(key, value);
+            } else if (action == 1) {
+                boolean existed = expected.containsKey(key);
+                expected.remove(key);
+                assertEquals(existed, actual.remove(key));
+            } else {
+                assertEquals(expected.get(key), actual.get(key));
+                assertEquals(expected.containsKey(key), actual.containsKey(key));
             }
             assertEquals(expected.size(), actual.size());
             assertTrue(actual.size() <= actual.capacity() * 0.75);
@@ -213,7 +210,24 @@ class HashMapCustomTest {
         return map;
     }
 
-    private record Key(int value, int hash) {
+    private static class Key {
+        private final int value;
+        private final int hash;
+
+        private Key(int value, int hash) {
+            this.value = value;
+            this.hash = hash;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof Key)) {
+                return false;
+            }
+            Key key = (Key) other;
+            return value == key.value && hash == key.hash;
+        }
         /** {@inheritDoc} */
         @Override
         public int hashCode() {
