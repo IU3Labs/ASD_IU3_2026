@@ -1,28 +1,6 @@
 # Отчёт по ЛР2
 
-Ryzhilo, группа 31.
-
-## Расположение решений
-
-Для каждой задачи есть папка с её номером и один Java-файл. Папки решений
-находятся в `src/main/java/ru/bmstu/lab02`, папки тестов — в
-`src/test/java/ru/bmstu/lab02`. Общий запуск замеров находится в
-`Lab02Benchmark.java` в тестовом пакете `ru.bmstu.lab02`.
-
-| Задача | Папка | Файл решения |
-|---|---|---|
-| 1A | `task01a` | `PriorityQueueCustom.java` |
-| 1B | `task01b` | `ComparatorPriorityQueue.java` |
-| 1C | `task01c` | `RemovablePriorityQueue.java` |
-| 1D | `task01d` | `BulkPriorityQueue.java` |
-| 2A | `task02a` | `HashMapCustom.java` |
-| 2B | `task02b` | `QuadraticHashMap.java` |
-| 2C | `task02c` | `CollisionKey.java` |
-| 2D | `task02d` | `LoadThresholdHashMap.java` |
-| 3A | `task03a` | `Task03A.java` |
-| 3B | `task03b` | `Task03B.java` |
-| 3C | `task03c` | `Task03C.java` |
-| 3D | `task03d` | `Task03D.java` |
+Рыжило К.А., группа ИУ3-31.
 
 
 ## Бинарная куча
