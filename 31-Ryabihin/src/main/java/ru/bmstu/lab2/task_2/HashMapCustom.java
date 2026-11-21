@@ -1,5 +1,5 @@
 /*
- * ЛР2, задача 2A. Хеш-таблица с линейным пробированием.
+ * ЛР2, задачи 2A и 2B. Хеш-таблица с линейным и квадратичным пробированием.
  */
 package ru.bmstu.lab2.task_2;
 
@@ -13,12 +13,39 @@ public final class HashMapCustom<K, V> {
     private static final double DEFAULT_LOAD_FACTOR = 0.75;
     private static final Entry<?, ?> DELETED = new Entry<>(null, null, 0);
 
+    private final Probing probing;
     private Entry<K, V>[] table = newTable(INITIAL_CAPACITY);
     private int size;
     private int deleted;
 
+    /** Способ вычисления смещения от начальной позиции ключа. */
+    public enum Probing {
+        LINEAR,
+        QUADRATIC;
+
+        long offset(int attempt) {
+            // i + 2i² перебирает все остатки по модулю степени двойки.
+            return this == LINEAR ? attempt : (long) attempt * (1 + 2L * attempt);
+        }
+    }
+
     /** Создаёт таблицу с линейным пробированием и порогом 0.75. */
-    public HashMapCustom() {}
+    public HashMapCustom() {
+        this(Probing.LINEAR, DEFAULT_LOAD_FACTOR);
+    }
+
+    /**
+     * Создаёт таблицу с заданным способом пробирования и порогом 0.75.
+     *
+     * @param probing способ выбора следующей ячейки
+     * @param loadFactor порог загрузки 0.75
+     */
+    public HashMapCustom(Probing probing, double loadFactor) {
+        this.probing = Objects.requireNonNull(probing, "Укажите способ пробирования");
+        if (loadFactor != DEFAULT_LOAD_FACTOR) {
+            throw new IllegalArgumentException("Для этой таблицы требуется порог 0.75");
+        }
+    }
 
     /**
      * Вставляет пару или обновляет значение по существующему ключу.
@@ -28,14 +55,14 @@ public final class HashMapCustom<K, V> {
      */
     public void put(K key, V value) {
         int hash = hashOf(key);
-        int index = findSlot(table, key, hash);
+        int index = findSlot(table, key, hash).index();
         Entry<K, V> entry = table[index];
         if (isOccupied(entry)) {
             entry.value = value;
             return;
         }
         if (prepareForInsert()) {
-            index = findSlot(table, key, hash);
+            index = findSlot(table, key, hash).index();
         }
         boolean reused = table[index] == DELETED;
         table[index] = new Entry<>(key, value, hash);
@@ -101,20 +128,30 @@ public final class HashMapCustom<K, V> {
         return table.length;
     }
 
+    /**
+     * Считает, сколько ячеек проверил бы get при поиске ключа.
+     *
+     * @param key ненулевой ключ
+     * @return количество пробирований, включая последнее
+     */
+    int probesForGet(K key) {
+        return findSlot(table, key, hashOf(key)).probes();
+    }
+
     private int indexOf(K key) {
-        int index = findSlot(table, key, hashOf(key));
+        int index = findSlot(table, key, hashOf(key)).index();
         return isOccupied(table[index]) ? index : -1;
     }
 
-    private int findSlot(Entry<K, V>[] entries, K key, int hash) {
+    private Search findSlot(Entry<K, V>[] entries, K key, int hash) {
         int capacity = entries.length;
         int start = (int) (Math.abs((long) hash) % capacity);
         int firstDeleted = -1;
         for (int attempt = 0; attempt < capacity; attempt++) {
-            int index = (start + attempt) & (capacity - 1);
+            int index = (int) ((start + probing.offset(attempt)) & (capacity - 1));
             Entry<K, V> entry = entries[index];
             if (entry == null) {
-                return firstDeleted < 0 ? index : firstDeleted;
+                return new Search(firstDeleted < 0 ? index : firstDeleted, attempt + 1);
             }
             if (entry == DELETED) {
                 // Запоминаем место для вставки, а поиск ключа продолжаем дальше.
@@ -122,10 +159,10 @@ public final class HashMapCustom<K, V> {
                     firstDeleted = index;
                 }
             } else if (entry.hash == hash && key.equals(entry.key)) {
-                return index;
+                return new Search(index, attempt + 1);
             }
         }
-        return firstDeleted;
+        return new Search(firstDeleted, capacity);
     }
 
     private boolean prepareForInsert() {
@@ -148,7 +185,7 @@ public final class HashMapCustom<K, V> {
         Entry<K, V>[] moved = newTable(capacity);
         for (Entry<K, V> entry : table) {
             if (isOccupied(entry)) {
-                moved[findSlot(moved, entry.key, entry.hash)] = entry;
+                moved[findSlot(moved, entry.key, entry.hash).index()] = entry;
             }
         }
         table = moved;
@@ -172,6 +209,8 @@ public final class HashMapCustom<K, V> {
     private static <K, V> Entry<K, V> deletedEntry() {
         return (Entry<K, V>) DELETED;
     }
+
+    private record Search(int index, int probes) {}
 
     private static final class Entry<K, V> {
         private final K key;
