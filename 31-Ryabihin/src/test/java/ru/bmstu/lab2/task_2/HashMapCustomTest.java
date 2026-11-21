@@ -9,13 +9,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.HashMap;
 import java.util.Random;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import ru.bmstu.lab2.task_2.HashMapCustom.Probing;
 
 class HashMapCustomTest {
     private static final double DEFAULT_LOAD_FACTOR = 0.75;
 
-    @Test
-    void shouldStartEmpty() {
-        HashMapCustom<String, Integer> table = new HashMapCustom<>();
+    @ParameterizedTest
+    @EnumSource(Probing.class)
+    void shouldStartEmpty(Probing probing) {
+        HashMapCustom<String, Integer> table = new HashMapCustom<>(probing, DEFAULT_LOAD_FACTOR);
 
         assertEquals(0, table.size());
         assertEquals(16, table.capacity());
@@ -24,9 +28,10 @@ class HashMapCustomTest {
         assertFalse(table.remove("missing"));
     }
 
-    @Test
-    void shouldFindAnEqualKey() {
-        HashMapCustom<String, Integer> table = new HashMapCustom<>();
+    @ParameterizedTest
+    @EnumSource(Probing.class)
+    void shouldFindAnEqualKey(Probing probing) {
+        HashMapCustom<String, Integer> table = new HashMapCustom<>(probing, DEFAULT_LOAD_FACTOR);
         String key = "alpha";
         table.put(key, 11);
 
@@ -35,9 +40,10 @@ class HashMapCustomTest {
         assertEquals(1, table.size());
     }
 
-    @Test
-    void shouldUpdateAtTheLoadLimitWithoutGrowing() {
-        HashMapCustom<Integer, Integer> table = new HashMapCustom<>();
+    @ParameterizedTest
+    @EnumSource(Probing.class)
+    void shouldUpdateAtTheLoadLimitWithoutGrowing(Probing probing) {
+        HashMapCustom<Integer, Integer> table = new HashMapCustom<>(probing, DEFAULT_LOAD_FACTOR);
         int capacity = table.capacity();
         int limit = (int) (capacity * DEFAULT_LOAD_FACTOR);
         for (int key = 0; key < limit; key++) {
@@ -50,9 +56,10 @@ class HashMapCustomTest {
         assertEquals(capacity, table.capacity());
     }
 
-    @Test
-    void shouldDoubleCapacityAndKeepEntries() {
-        HashMapCustom<Integer, Integer> table = new HashMapCustom<>();
+    @ParameterizedTest
+    @EnumSource(Probing.class)
+    void shouldDoubleCapacityAndKeepEntries(Probing probing) {
+        HashMapCustom<Integer, Integer> table = new HashMapCustom<>(probing, DEFAULT_LOAD_FACTOR);
         int capacity = table.capacity();
         int count = (int) (capacity * DEFAULT_LOAD_FACTOR) + 1;
 
@@ -67,9 +74,10 @@ class HashMapCustomTest {
         }
     }
 
-    @Test
-    void shouldDistinguishNullValueFromMissingKey() {
-        HashMapCustom<String, Integer> table = new HashMapCustom<>();
+    @ParameterizedTest
+    @EnumSource(Probing.class)
+    void shouldDistinguishNullValueFromMissingKey(Probing probing) {
+        HashMapCustom<String, Integer> table = new HashMapCustom<>(probing, DEFAULT_LOAD_FACTOR);
         table.put("present", null);
 
         assertNull(table.get("present"));
@@ -79,9 +87,10 @@ class HashMapCustomTest {
         assertFalse(table.containsKey("present"));
     }
 
-    @Test
-    void shouldKeepLaterKeysReachableAfterRemovingAConflict() {
-        HashMapCustom<Integer, Integer> table = new HashMapCustom<>();
+    @ParameterizedTest
+    @EnumSource(Probing.class)
+    void shouldKeepLaterKeysReachableAfterRemovingAConflict(Probing probing) {
+        HashMapCustom<Integer, Integer> table = new HashMapCustom<>(probing, DEFAULT_LOAD_FACTOR);
         int first = 0;
         int second = 16;
         table.put(first, 1);
@@ -93,9 +102,10 @@ class HashMapCustomTest {
         assertEquals(1, table.size());
     }
 
-    @Test
-    void shouldReuseATombstoneAndUpdateTheKeyBehindIt() {
-        HashMapCustom<Integer, Integer> table = new HashMapCustom<>();
+    @ParameterizedTest
+    @EnumSource(Probing.class)
+    void shouldReuseATombstoneAndUpdateTheKeyBehindIt(Probing probing) {
+        HashMapCustom<Integer, Integer> table = new HashMapCustom<>(probing, DEFAULT_LOAD_FACTOR);
         int first = 0;
         int second = 16;
         int third = 32;
@@ -108,11 +118,13 @@ class HashMapCustomTest {
         assertEquals(2, table.size());
         assertEquals(20, table.get(second));
         assertEquals(3, table.get(third));
+        assertEquals(1, table.probesForGet(third));
     }
 
-    @Test
-    void shouldHandleTheMinimumHashCode() {
-        HashMapCustom<Integer, String> table = new HashMapCustom<>();
+    @ParameterizedTest
+    @EnumSource(Probing.class)
+    void shouldHandleTheMinimumHashCode(Probing probing) {
+        HashMapCustom<Integer, String> table = new HashMapCustom<>(probing, DEFAULT_LOAD_FACTOR);
         table.put(Integer.MIN_VALUE, "minimum");
         table.put(0, "zero");
 
@@ -121,9 +133,10 @@ class HashMapCustomTest {
         assertEquals("zero", table.get(0));
     }
 
-    @Test
-    void shouldKeepLiveKeysDuringRepeatedInsertionsAndRemovals() {
-        HashMapCustom<Integer, Integer> table = new HashMapCustom<>();
+    @ParameterizedTest
+    @EnumSource(Probing.class)
+    void shouldKeepLiveKeysDuringRepeatedInsertionsAndRemovals(Probing probing) {
+        HashMapCustom<Integer, Integer> table = new HashMapCustom<>(probing, DEFAULT_LOAD_FACTOR);
         int capacity = table.capacity();
         table.put(-1, 42);
         for (int key = 0; key < 2_048; key++) {
@@ -136,9 +149,10 @@ class HashMapCustomTest {
         assertEquals(capacity, table.capacity());
     }
 
-    @Test
-    void shouldMatchJavaMapDuringMixedOperations() {
-        HashMapCustom<Integer, Integer> actual = new HashMapCustom<>();
+    @ParameterizedTest
+    @EnumSource(Probing.class)
+    void shouldMatchJavaMapDuringMixedOperations(Probing probing) {
+        HashMapCustom<Integer, Integer> actual = new HashMapCustom<>(probing, DEFAULT_LOAD_FACTOR);
         HashMap<Integer, Integer> expected = new HashMap<>();
         Random random = new Random(2026);
         for (int i = 0; i < 4_000; i++) {
@@ -157,11 +171,37 @@ class HashMapCustomTest {
     }
 
     @Test
+    void shouldUseLinearProbingWithTheDefaultLoadFactor() {
+        HashMapCustom<Integer, Integer> table = new HashMapCustom<>();
+        table.put(0, 0);
+        table.put(16, 16);
+        assertEquals(2, table.probesForGet(1));
+
+        for (int key = 1; key <= 10; key++) {
+            table.put(key, key);
+        }
+
+        assertEquals(16, table.capacity());
+        table.put(11, 11);
+        assertEquals(32, table.capacity());
+    }
+
+    @Test
     void shouldRejectNullKeys() {
         HashMapCustom<String, Integer> table = new HashMapCustom<>();
         assertThrows(NullPointerException.class, () -> table.put(null, 1));
         assertThrows(NullPointerException.class, () -> table.get(null));
         assertThrows(NullPointerException.class, () -> table.containsKey(null));
         assertThrows(NullPointerException.class, () -> table.remove(null));
+    }
+
+    @Test
+    void shouldVisitEveryIndexWithQuadraticProbing() {
+        boolean[] seen = new boolean[256];
+        for (int attempt = 0; attempt < seen.length; attempt++) {
+            int index = (int) (Probing.QUADRATIC.offset(attempt) % seen.length);
+            assertFalse(seen[index]);
+            seen[index] = true;
+        }
     }
 }

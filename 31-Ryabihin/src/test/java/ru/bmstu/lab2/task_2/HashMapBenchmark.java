@@ -9,14 +9,16 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
+import ru.bmstu.lab2.task_2.HashMapCustom.Probing;
 
-/** Воспроизводимые замеры для задачи 2A. */
+/** Воспроизводимые замеры для задач 2A–2B. */
 public final class HashMapBenchmark {
     private static final int[] SIZES = {10_000, 50_000, 100_000};
     private static final int QUERY_COUNT = 50_000;
     private static final int WARMUPS = 3;
     private static final int RUNS = 5;
     private static final int SEED = 2026;
+    private static final double DEFAULT_LOAD_FACTOR = 0.75;
 
     private HashMapBenchmark() {}
 
@@ -30,8 +32,13 @@ public final class HashMapBenchmark {
         for (int size : SIZES) {
             Workload<Integer> workload = workload(pool, size);
             printTiming("jdk", workload, HashMapBenchmark::jdkMap);
-            printTiming("linear-0.75", workload, HashMapBenchmark::customMap);
+            printTiming("linear-0.75", workload, () -> customMap(Probing.LINEAR));
+            printTiming("quadratic-0.75", workload, () -> customMap(Probing.QUADRATIC));
         }
+
+        Workload<Integer> medium = workload(pool, 50_000);
+        printProbes(medium, Probing.LINEAR);
+        printProbes(medium, Probing.QUADRATIC);
     }
 
     private static Integer[] uniqueKeys(int count) {
@@ -57,6 +64,24 @@ public final class HashMapBenchmark {
             queries[i + 1] = pool[size + i / 2];
         }
         return new Workload<>(keys, queries, queries.length / 2);
+    }
+
+    private static void printProbes(Workload<Integer> workload, Probing probing) {
+        HashMapCustom<Integer, Integer> table = new HashMapCustom<>(probing, DEFAULT_LOAD_FACTOR);
+        for (Integer key : workload.keys()) {
+            table.put(key, 1);
+        }
+        long probes = 0;
+        for (Integer key : workload.queries()) {
+            probes += table.probesForGet(key);
+        }
+        System.out.printf(
+                Locale.ROOT,
+                "PROBES\t%s\t%d\t%d\t%.4f%n",
+                probing,
+                workload.keys().length,
+                workload.queries().length,
+                (double) probes / workload.queries().length);
     }
 
     private static <K> void printTiming(
@@ -111,8 +136,8 @@ public final class HashMapBenchmark {
         return hits;
     }
 
-    private static <K> TimedMap<K> customMap() {
-        HashMapCustom<K, Integer> table = new HashMapCustom<>();
+    private static <K> TimedMap<K> customMap(Probing probing) {
+        HashMapCustom<K, Integer> table = new HashMapCustom<>(probing, DEFAULT_LOAD_FACTOR);
         return new TimedMap<>(table::put, table::get, table::capacity);
     }
 
