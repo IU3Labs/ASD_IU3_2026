@@ -1,14 +1,22 @@
 package ru.bmstu.lab2;
+
+import java.util.Comparator;
 import java.util.NoSuchElementException;
 
-/** Задачи 1A. Очередь с приоритетом на двоичной куче в массиве. */
+/** Задачи 1A, 1B. Очередь с приоритетом на двоичной куче в массиве. */
 public class PriorityQueueCustom<T> {
     private static final int INITIAL_CAPACITY = 8;
     private Object[] data = new Object[INITIAL_CAPACITY];
     private int size;
+    private Comparator<? super T> comparator;
 
     /** Создаёт пустую очередь с естественным порядком элементов. */
     public PriorityQueueCustom() {
+    }
+
+    /** Создаёт очередь с заданным порядком; null означает естественный порядок. */
+    public PriorityQueueCustom(Comparator<? super T> comparator) {
+        this.comparator = comparator;
     }
 
     /** Добавляет элемент; O(log n) амортизированно с учётом расширения массива. */
@@ -99,6 +107,7 @@ public class PriorityQueueCustom<T> {
         data[second] = temp;
     }
 
+    // Object[] нужен, потому что Java не разрешает new T[].
     @SuppressWarnings("unchecked")
     private T elementAt(int index) {
         return (T) data[index];
@@ -106,6 +115,9 @@ public class PriorityQueueCustom<T> {
 
     @SuppressWarnings("unchecked")
     private int compare(T first, T second) {
+        if (comparator != null) {
+            return comparator.compare(first, second);
+        }
         return ((Comparable<? super T>) first).compareTo(second);
     }
 }

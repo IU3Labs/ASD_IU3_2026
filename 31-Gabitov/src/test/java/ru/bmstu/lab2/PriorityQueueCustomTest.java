@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Comparator;
 import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
 import java.util.Random;
@@ -147,6 +148,56 @@ class PriorityQueueCustomTest {
             if (!expected.isEmpty()) {
                 assertEquals(expected.peek(), actual.peek());
             }
+        }
+        while (!expected.isEmpty()) {
+            assertEquals(expected.poll(), actual.poll());
+        }
+    }
+
+    @Test
+    void shouldWorkAsMaxHeap() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>(Comparator.reverseOrder());
+        for (int value : new int[] {2, 9, 1, 5, 9}) {
+            queue.add(value);
+        }
+        assertOrder(queue, new int[] {9, 9, 5, 2, 1});
+    }
+
+    @Test
+    void shouldWorkWithNaturalComparator() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>(Comparator.naturalOrder());
+        queue.add(8);
+        queue.add(-3);
+        assertOrder(queue, new int[] {-3, 8});
+    }
+
+    @Test
+    void shouldUseNaturalOrderForNullComparator() {
+        Comparator<Integer> comparator = null;
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>(comparator);
+        queue.add(3);
+        queue.add(1);
+        assertOrder(queue, new int[] {1, 3});
+    }
+
+    @Test
+    void shouldUseCaseInsensitiveComparator() {
+        PriorityQueueCustom<String> queue = new PriorityQueueCustom<>(String.CASE_INSENSITIVE_ORDER);
+        queue.add("banana");
+        queue.add("APPLE");
+        assertEquals("APPLE", queue.poll());
+        assertEquals("banana", queue.poll());
+    }
+
+    @Test
+    void shouldMatchStandardMaxHeap() {
+        PriorityQueueCustom<Integer> actual = new PriorityQueueCustom<>(Comparator.reverseOrder());
+        PriorityQueue<Integer> expected = new PriorityQueue<>(Comparator.reverseOrder());
+        Random random = new Random(31);
+        for (int i = 0; i < 1000; i++) {
+            int value = random.nextInt();
+            actual.add(value);
+            expected.add(value);
         }
         while (!expected.isEmpty()) {
             assertEquals(expected.poll(), actual.poll());

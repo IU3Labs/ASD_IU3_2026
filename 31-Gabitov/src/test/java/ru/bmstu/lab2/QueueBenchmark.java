@@ -1,5 +1,6 @@
 package ru.bmstu.lab2;
 
+import java.util.Comparator;
 import java.util.Locale;
 import java.util.PriorityQueue;
 import java.util.Random;
@@ -29,7 +30,8 @@ public final class QueueBenchmark {
         System.out.println("|---|---|---:|---:|---|");
         for (int n : new int[] {10000, 50000, 100000}) {
             Integer[] values = createValues(n);
-            measureCycle(values);
+            measureCycle(values, false);
+            measureCycle(values, true);
         }
         System.out.println();
         System.out.println("Контрольная сумма: " + checksum + ".");
@@ -44,7 +46,7 @@ public final class QueueBenchmark {
         return values;
     }
 
-    private static void measureCycle(Integer[] values) {
+    private static void measureCycle(Integer[] values, boolean maximum) {
         double own = 0;
         double standard = 0;
         for (int run = -WARMUP_RUNS; run < MEASURE_RUNS; run++) {
@@ -52,25 +54,26 @@ public final class QueueBenchmark {
             long first;
             long second;
             if (run % 2 == 0) {
-                first = runOwn(values);
-                second = runStandard(values);
+                first = runOwn(values, maximum);
+                second = runStandard(values, maximum);
             } else {
-                second = runStandard(values);
-                first = runOwn(values);
+                second = runStandard(values, maximum);
+                first = runOwn(values, maximum);
             }
             if (run >= 0) {
                 own += first;
                 standard += second;
             }
         }
-        String mode = "min-heap";
+        String mode = maximum ? "max-heap" : "min-heap";
         printRow("PriorityQueueCustom", "add всех + poll всех", values.length, own, mode);
         printRow("java.util.PriorityQueue", "add всех + poll всех", values.length, standard, mode);
     }
 
-    private static long runOwn(Integer[] values) {
+    private static long runOwn(Integer[] values, boolean maximum) {
         long start = System.nanoTime();
-        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        Comparator<Integer> comparator = maximum ? Comparator.reverseOrder() : Comparator.naturalOrder();
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>(comparator);
         for (Integer value : values) {
             queue.add(value);
         }
@@ -83,9 +86,10 @@ public final class QueueBenchmark {
         return elapsed;
     }
 
-    private static long runStandard(Integer[] values) {
+    private static long runStandard(Integer[] values, boolean maximum) {
         long start = System.nanoTime();
-        PriorityQueue<Integer> queue = new PriorityQueue<>();
+        Comparator<Integer> comparator = maximum ? Comparator.reverseOrder() : Comparator.naturalOrder();
+        PriorityQueue<Integer> queue = new PriorityQueue<>(comparator);
         for (Integer value : values) {
             queue.add(value);
         }

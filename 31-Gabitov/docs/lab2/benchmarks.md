@@ -17,16 +17,22 @@
 
 | Структура | Операция | N элементов | Среднее время (мс) | Примечание |
 |---|---|---:|---:|---|
-| PriorityQueueCustom | add всех + poll всех | 10000 | 2.265 | min-heap |
-| java.util.PriorityQueue | add всех + poll всех | 10000 | 2.113 | min-heap |
-| PriorityQueueCustom | add всех + poll всех | 50000 | 14.529 | min-heap |
-| java.util.PriorityQueue | add всех + poll всех | 50000 | 11.937 | min-heap |
-| PriorityQueueCustom | add всех + poll всех | 100000 | 36.626 | min-heap |
-| java.util.PriorityQueue | add всех + poll всех | 100000 | 30.982 | min-heap |
+| PriorityQueueCustom | add всех + poll всех | 10000 | 2.800 | min-heap |
+| java.util.PriorityQueue | add всех + poll всех | 10000 | 2.631 | min-heap |
+| PriorityQueueCustom | add всех + poll всех | 10000 | 2.702 | max-heap |
+| java.util.PriorityQueue | add всех + poll всех | 10000 | 2.752 | max-heap |
+| PriorityQueueCustom | add всех + poll всех | 50000 | 16.828 | min-heap |
+| java.util.PriorityQueue | add всех + poll всех | 50000 | 17.863 | min-heap |
+| PriorityQueueCustom | add всех + poll всех | 50000 | 16.436 | max-heap |
+| java.util.PriorityQueue | add всех + poll всех | 50000 | 17.276 | max-heap |
+| PriorityQueueCustom | add всех + poll всех | 100000 | 44.662 | min-heap |
+| java.util.PriorityQueue | add всех + poll всех | 100000 | 39.862 | min-heap |
+| PriorityQueueCustom | add всех + poll всех | 100000 | 45.989 | max-heap |
+| java.util.PriorityQueue | add всех + poll всех | 100000 | 37.302 | max-heap |
 
 ## Вывод
 
-На 100000 элементов min-heap собственной реализации заняла 36.626 мс, стандартная очередь — 30.982 мс.
-У обеих реализаций цикл из N добавлений и N извлечений имеет верхнюю оценку O(n log n), а конкретные времена зависят от JVM и нагрузки.
+На 100000 элементов min-heap собственной реализации заняла 44.662 мс, стандартная очередь — 39.862 мс.
+Min- и max-режимы на одинаковом случайном наборе дали 44.662 и 45.989 мс: асимптотика одинакова, различия связаны с порядком сравнений, JIT и шумом измерений.
 Такие одиночные учебные замеры не доказывают постоянного преимущества одной реализации на всех входных данных.
 Обе очереди хранят массив ссылок и требуют O(n) памяти при росте, но запас ёмкости и выделения при расширении отличаются; точные байты здесь не измерялись, а после удалений сохранённая ёмкость может быть больше текущего размера.
