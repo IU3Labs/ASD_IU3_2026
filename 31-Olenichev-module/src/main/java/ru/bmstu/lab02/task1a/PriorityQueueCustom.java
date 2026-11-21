@@ -121,6 +121,25 @@ public class PriorityQueueCustom<T extends Comparable<T>> {
         return (T) heap;
     }
 
+        /**
+     * Возвращает текущее количество элементов за O(1).
+     *
+     * @return размер очереди
+     */
+    public int size() {
+        return size;
+    }
+
+    /**
+     * Проверяет, пуста ли очередь, за O(1).
+     *
+     * @return true, если очередь не содержит элементов
+     */
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
+
 
 
 
