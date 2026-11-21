@@ -68,7 +68,10 @@ class TopKTest {
     void shouldMatchSortingForTopK() {
         Random random = new Random(71);
         for (int size = 0; size <= 100; size++) {
-            List<Integer> input = random.ints(size, -20, 20).boxed().toList();
+            List<Integer> input = new ArrayList<>();
+            for (int i = 0; i < size; i++) {
+                input.add(random.nextInt(40) - 20);
+            }
             List<Integer> sorted = new ArrayList<>(input);
             sorted.sort(Comparator.reverseOrder());
             for (int k = 0; k <= size; k++) {

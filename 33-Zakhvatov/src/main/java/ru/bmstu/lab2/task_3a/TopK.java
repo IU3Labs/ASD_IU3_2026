@@ -1,7 +1,6 @@
 package ru.bmstu.lab2.task_3a;
 
 import java.util.List;
-import java.util.Objects;
 import ru.bmstu.lab2.result.ResultList;
 import ru.bmstu.lab2.task_1a_1b_1d.PriorityQueueCustom;
 
@@ -12,14 +11,18 @@ public final class TopK {
 
     /** Возвращает k наибольших по убыванию за O(n log(k + 1)); 0 <= k <= n. */
     public static <T extends Comparable<? super T>> List<T> topK(List<T> input, int k) {
-        Objects.requireNonNull(input, "input");
+        if (input == null) {
+            throw new NullPointerException("input");
+        }
         if (k < 0 || k > input.size()) {
             throw new IllegalArgumentException("k вне диапазона [0, n]");
         }
         PriorityQueueCustom<T> heap = new PriorityQueueCustom<>();
         if (k > 0) {
             for (T item : input) {
-                Objects.requireNonNull(item, "item");
+                if (item == null) {
+                    throw new NullPointerException("item");
+                }
                 if (heap.size() < k) {
                     heap.add(item);
                 } else if (item.compareTo(heap.peek()) > 0) {

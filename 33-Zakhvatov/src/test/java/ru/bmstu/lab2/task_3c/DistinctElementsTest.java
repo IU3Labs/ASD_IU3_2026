@@ -55,14 +55,31 @@ class DistinctElementsTest {
 
     @Test
     void shouldHandleDistinctHashCollisionsAndEqualObjects() {
-        record Item(int value) {
-            /** {@inheritDoc} */
-            @Override
-            public int hashCode() {
-                return 1;
-            }
-        }
         assertEquals(List.of(new Item(2), new Item(1)),
                 DistinctElements.distinct(List.of(new Item(2), new Item(1), new Item(2))));
     }
+    private static class Item {
+        private final int value;
+
+        private Item(int value) {
+            this.value = value;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof Item)) {
+                return false;
+            }
+            Item item = (Item) other;
+            return value == item.value;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public int hashCode() {
+            return 1;
+        }
+    }
+
 }
