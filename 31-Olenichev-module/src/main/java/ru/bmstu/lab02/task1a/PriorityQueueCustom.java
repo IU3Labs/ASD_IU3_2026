@@ -62,4 +62,30 @@ public class PriorityQueueCustom<T extends Comparable<T>> {
         heap[j] = tmp;
     }
 
+        /**
+     * Добавляет элемент в очередь за O(log n).
+     *
+     * @param item добавляемый элемент (не null)
+     * @throws IllegalArgumentException если передан null
+     */
+    public void add(T item) {
+        if (item == null) {
+            throw new IllegalArgumentException("Element cannot be null");
+        }
+        if (size == heap.length) {
+            grow();
+        }
+        heap[size] = item;
+        siftUp(size);
+        size++;
+    }
+
+        private void grow() {
+        Object[] newHeap = new Object[heap.length * GROWTH_FACTOR];
+        System.arraycopy(heap, 0, newHeap, 0, heap.length);
+        heap = newHeap;
+    }
+
+
+
 }
