@@ -1,0 +1,90 @@
+package ru.bmstu.lab1.task_49;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Тесты задачи 49: программа запускается с подставленным вводом, проверяется её вывод.
+ */
+class RowSumsTest {
+
+    /**
+     * Запускает RowSums с заданным вводом и возвращает всё, что программа напечатала.
+     */
+    private String run(String input) {
+        InputStream originalIn = System.in;
+        PrintStream originalOut = System.out;
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        try {
+            System.setIn(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)));
+            System.setOut(new PrintStream(output, true, StandardCharsets.UTF_8));
+            RowSums.main(new String[0]);
+        } finally {
+            System.setIn(originalIn);
+            System.setOut(originalOut);
+        }
+        return output.toString(StandardCharsets.UTF_8).strip();
+    }
+
+    @Test
+    void shouldSumEachRow() {
+        assertEquals("6 15", run("2 3\n1 2 3\n4 5 6\n"));
+    }
+
+    @Test
+    void shouldHandleMixedSigns() {
+        assertEquals("0 -3 6", run("3 2\n1 -1\n2 -5\n3 3\n"));
+    }
+
+    @Test
+    void shouldHandleNegativeNumbersOnly() {
+        assertEquals("-3 -7", run("2 2\n-1 -2\n-3 -4\n"));
+    }
+
+    @Test
+    void shouldReturnTotalSumForSingleRowMatrix() {
+        assertEquals("13", run("1 3\n4 2 7\n"));
+    }
+
+    @Test
+    void shouldReturnColumnItselfForSingleColumnMatrix() {
+        assertEquals("4 9 2", run("3 1\n4\n9\n2\n"));
+    }
+
+    @Test
+    void shouldNotOverflowOnLargeValues() {
+        assertEquals("4294967294", run("1 2\n2147483647 2147483647\n"));
+    }
+
+    @Test
+    void shouldReportErrorWhenRowsIsNotNumber() {
+        assertTrue(run("abc\n").contains("должно быть целое число"));
+    }
+
+    @Test
+    void shouldReportErrorWhenColumnsIsNotNumber() {
+        assertTrue(run("3 x\n").contains("должно быть целое число"));
+    }
+
+    @Test
+    void shouldReportErrorWhenSizeIsTooSmall() {
+        assertTrue(run("0 5\n").contains("некорректный размер"));
+    }
+
+    @Test
+    void shouldReportErrorWhenSizeIsTooLarge() {
+        assertTrue(run("1001 1\n").contains("некорректный размер"));
+    }
+
+    @Test
+    void shouldReportErrorWhenElementIsNotNumber() {
+        assertTrue(run("2 2\n1 x\n").contains("должно быть целое число"));
+    }
+}
