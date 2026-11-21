@@ -24,18 +24,19 @@ public class PriorityQueueCustom<T> {
         elements = new Object[DEFAULT_CAPACITY];
     }
 
-    /** Копирует элементы для последующего построения кучи. */
-    protected PriorityQueueCustom(T[] array) {
+    /** Копирует массив и строит кучу за линейное время. */
+    public PriorityQueueCustom(T[] array) {
         comparator = PriorityQueueCustom::compareNaturally;
         elements = Arrays.copyOf(array, Math.max(DEFAULT_CAPACITY, array.length), Object[].class);
         size = array.length;
         for (T item : array) {
             Objects.requireNonNull(item);
         }
+        buildHeap();
     }
 
     /** Просеивает внутренние узлы снизу вверх. */
-    protected final void buildHeap() {
+    private void buildHeap() {
         for (int index = size / 2 - 1; index >= 0; index--) {
             siftDown(index);
         }
