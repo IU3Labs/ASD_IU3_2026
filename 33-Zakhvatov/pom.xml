@@ -22,6 +22,8 @@
         </dependency>
     </dependencies>
     <build>
+        <sourceDirectory>LP2/src/main/java</sourceDirectory>
+        <testSourceDirectory>LP2/src/test/java</testSourceDirectory>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -40,7 +42,7 @@
                     <excludedGroups>${benchmark.excluded}</excludedGroups>
                     <argLine>@{argLine} -Xms512m -Xmx1g</argLine>
                     <systemPropertyVariables>
-                        <lab.module>${project.basedir}</lab.module>
+                        <lab.module>${project.basedir}/LP2</lab.module>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
