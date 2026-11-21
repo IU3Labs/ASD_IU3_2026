@@ -1,118 +1,226 @@
 package ru.bmstu.lab2.benchmark;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import ru.bmstu.lab2.task_3a.TopK;
 import ru.bmstu.lab2.task_3b.WordCounter;
 import ru.bmstu.lab2.task_3c.DistinctElements;
 
-/** Эксперименты прикладных задач 3A, 3B, 3C с библиотечными эталонами. */
+/** Замеры для Top-K, подсчёта слов и удаления повторов. */
 final class ApplicationBenchmark {
-    private static final Pattern WORD = Pattern.compile("[\\p{L}\\p{M}\\p{N}]+");
-    private final BenchmarkSupport timer;
-
-    ApplicationBenchmark(BenchmarkSupport timer) {
-        this.timer = timer;
-    }
+    private Object memoryResult;
 
     String run() {
-        StringBuilder report = new StringBuilder("\n## 3A: Top-K из 1 000 000 элементов\n\n");
-        List<Integer> input = new Random(3).ints(1_000_000).boxed().toList();
+        StringBuilder table = new StringBuilder();
+        appendTopK(table);
+        appendWords(table);
+        appendDistinct(table);
+        return table.toString();
+    }
+
+    private void appendTopK(StringBuilder table) {
+        List<Integer> input = randomList(1_000_000, Integer.MAX_VALUE);
         int k = 100;
-        List<Integer> sorted = sortedTopK(input, k);
-        assertEquals(sorted, TopK.topK(input, k));
-        report.append("k = 100; корректность проверена сравнением всех k значений с сортировкой.\n\n");
-        report.append("| Метод | Среднее, мс | σ, мс | Выделено, МиБ |\n|---|---:|---:|---:|\n");
-        report.append("| Собственная куча O(n log k) | ")
-                .append(timer.measure(() -> TopK.topK(input, k).hashCode()).cells()).append(" |\n");
-        report.append("| Полная сортировка O(n log n) | ")
-                .append(timer.measure(() -> sortedTopK(input, k).hashCode()).cells()).append(" |\n");
-        appendWords(report);
-        appendDistinct(report);
-        return report.toString();
+        assertEquals(sortedTopK(input, k), TopK.topK(input, k));
+        table.append("| Метод (3A) | N элементов | k | Среднее время (мс) |\n");
+        table.append("|---|---:|---:|---:|\n");
+        table.append("| Своя очередь | 1000000 | 100 | ");
+        table.append(Lab2BenchmarkTest.number(topKTime(input, k, false))).append(" |\n");
+        table.append("| Полная сортировка | 1000000 | 100 | ");
+        table.append(Lab2BenchmarkTest.number(topKTime(input, k, true))).append(" |\n\n");
     }
 
-    private void appendWords(StringBuilder report) {
-        String text = wordCorpus();
-        Map<String, Integer> counts = WordCounter.countWords(text);
-        assertEquals(standardCount(text), counts);
-        report.append("\n## 3B: частота слов, текст около 1 МиБ\n\n");
-        report.append("Детерминированный синтетический корпус, UTF-8: ")
-                .append(text.getBytes(StandardCharsets.UTF_8).length).append(" байт.\n\n");
-        report.append("| Таблица | Среднее, мс | σ, мс | Выделено, МиБ |\n|---|---:|---:|---:|\n");
-        report.append("| HashMapCustom | ")
-                .append(timer.measure(() -> WordCounter.countWords(text).size()).cells()).append(" |\n");
-        report.append("| java.util.HashMap | ")
-                .append(timer.measure(() -> standardCount(text).size()).cells()).append(" |\n\n");
-        List<Map.Entry<String, Integer>> frequent = new ArrayList<>(counts.entrySet());
-        frequent.sort(Comparator.<Map.Entry<String, Integer>>comparingInt(Map.Entry::getValue)
-                .reversed().thenComparing(Map.Entry::getKey));
-        report.append("10 самых частых слов (при равенстве — по алфавиту):\n\n| Слово | Частота |\n|---|---:|\n");
-        for (Map.Entry<String, Integer> entry : frequent.subList(0, 10)) {
-            report.append("| ").append(entry.getKey()).append(" | ").append(entry.getValue()).append(" |\n");
-            System.out.println(entry.getKey() + ": " + entry.getValue());
+    private double topKTime(List<Integer> input, int k, boolean sorting) {
+        List<Integer> expected = sortedTopK(input, k);
+        long total = 0;
+        for (int run = -1; run < Lab2BenchmarkTest.REPEATS; run++) {
+            long start = System.nanoTime();
+            List<Integer> result;
+            if (sorting) {
+                result = sortedTopK(input, k);
+            } else {
+                result = TopK.topK(input, k);
+            }
+            long elapsed = System.nanoTime() - start;
+            assertEquals(expected, result);
+            if (run >= 0) {
+                total += elapsed;
+            }
         }
-    }
-
-    private void appendDistinct(StringBuilder report) {
-        report.append("\n## 3C: уникальные элементы, время и выделение памяти\n\n");
-        report.append("Вход содержит повторы: случайные значения из диапазона [0, N/4).\n\n");
-        report.append("| Метод | N | Среднее, мс | σ, мс | Выделено, МиБ |\n|---|---:|---:|---:|---:|\n");
-        for (int size : new int[]{10_000, 50_000, 100_000}) {
-            List<Integer> input = new Random(5).ints(size, 0, size / 4).boxed().toList();
-            assertEquals(new ArrayList<>(new LinkedHashSet<>(input)), DistinctElements.distinct(input));
-            report.append("| Собственная таблица + List | ").append(size).append(" | ")
-                    .append(timer.measure(() -> DistinctElements.distinct(input).hashCode()).cells()).append(" |\n");
-            report.append("| new LinkedHashSet<>(items) | ").append(size).append(" | ")
-                    .append(timer.measure(() -> new LinkedHashSet<>(input).size()).cells()).append(" |\n");
-            report.append("| LinkedHashSet + ArrayList (тот же List-контракт) | ").append(size).append(" | ")
-                    .append(timer.measure(() -> new ArrayList<>(new LinkedHashSet<>(input)).hashCode()).cells())
-                    .append(" |\n");
-        }
+        return total / Lab2BenchmarkTest.REPEATS / 1_000_000.0;
     }
 
     private List<Integer> sortedTopK(List<Integer> input, int k) {
         List<Integer> sorted = new ArrayList<>(input);
-        sorted.sort(Comparator.reverseOrder());
+        Collections.sort(sorted, Collections.reverseOrder());
         return sorted.subList(0, k);
     }
 
+    private void appendWords(StringBuilder table) {
+        String text = wordCorpus();
+        Map<String, Integer> counts = WordCounter.countWords(text);
+        assertEquals(standardCount(text), counts);
+        int bytes = text.getBytes(StandardCharsets.UTF_8).length;
+        table.append("| Таблица (3B) | Объём текста (байт) | Среднее время (мс) |\n");
+        table.append("|---|---:|---:|\n");
+        table.append("| HashMapCustom | ").append(bytes).append(" | ");
+        table.append(Lab2BenchmarkTest.number(wordsTime(text, false))).append(" |\n");
+        table.append("| java.util.HashMap | ").append(bytes).append(" | ");
+        table.append(Lab2BenchmarkTest.number(wordsTime(text, true))).append(" |\n\n");
+        appendFrequentWords(table, counts);
+    }
+
+    private double wordsTime(String text, boolean standard) {
+        Map<String, Integer> expected = standardCount(text);
+        long total = 0;
+        for (int run = -1; run < Lab2BenchmarkTest.REPEATS; run++) {
+            long start = System.nanoTime();
+            Map<String, Integer> result;
+            if (standard) {
+                result = standardCount(text);
+            } else {
+                result = WordCounter.countWords(text);
+            }
+            long elapsed = System.nanoTime() - start;
+            assertEquals(expected, result);
+            if (run >= 0) {
+                total += elapsed;
+            }
+        }
+        return total / Lab2BenchmarkTest.REPEATS / 1_000_000.0;
+    }
+
+    private void appendFrequentWords(StringBuilder table, Map<String, Integer> counts) {
+        List<String> words = new ArrayList<>(counts.keySet());
+        table.append("| Слово из топ-10 (3B) | Частота |\n|---|---:|\n");
+        for (int place = 0; place < 10 && !words.isEmpty(); place++) {
+            String best = words.get(0);
+            for (String word : words) {
+                if (counts.get(word) > counts.get(best)
+                        || counts.get(word).equals(counts.get(best)) && word.compareTo(best) < 0) {
+                    best = word;
+                }
+            }
+            table.append("| ").append(best).append(" | ").append(counts.get(best)).append(" |\n");
+            System.out.println(best + ": " + counts.get(best));
+            words.remove(best);
+        }
+        table.append('\n');
+    }
+
+    private void appendDistinct(StringBuilder table) {
+        table.append("| Метод (3C) | N элементов | Среднее время (мс) | Память результата (КиБ) | Примечание |\n");
+        table.append("|---|---:|---:|---:|---|\n");
+        for (int n : new int[]{10_000, 50_000, 100_000}) {
+            List<Integer> input = randomList(n, n / 4);
+            assertEquals(new ArrayList<>(new LinkedHashSet<>(input)), DistinctElements.distinct(input));
+            table.append("| Своя таблица + List | ").append(n).append(" | ");
+            table.append(Lab2BenchmarkTest.number(distinctTime(input, false))).append(" | ");
+            table.append(Lab2BenchmarkTest.number(distinctMemory(input, false))).append(" | приблизительно |\n");
+            table.append("| new LinkedHashSet<>(items) | ").append(n).append(" | ");
+            table.append(Lab2BenchmarkTest.number(distinctTime(input, true))).append(" | ");
+            table.append(Lab2BenchmarkTest.number(distinctMemory(input, true))).append(" | приблизительно |\n");
+        }
+    }
+
+    private double distinctTime(List<Integer> input, boolean standard) {
+        List<Integer> expected = new ArrayList<>(new LinkedHashSet<>(input));
+        long total = 0;
+        for (int run = -1; run < Lab2BenchmarkTest.REPEATS; run++) {
+            long start = System.nanoTime();
+            if (standard) {
+                LinkedHashSet<Integer> result = new LinkedHashSet<>(input);
+                long elapsed = System.nanoTime() - start;
+                assertEquals(expected, new ArrayList<>(result));
+                if (run >= 0) {
+                    total += elapsed;
+                }
+            } else {
+                List<Integer> result = DistinctElements.distinct(input);
+                long elapsed = System.nanoTime() - start;
+                assertEquals(expected, result);
+                if (run >= 0) {
+                    total += elapsed;
+                }
+            }
+        }
+        return total / Lab2BenchmarkTest.REPEATS / 1_000_000.0;
+    }
+
+    private double distinctMemory(List<Integer> input, boolean standard) {
+        memoryResult = null;
+        System.gc();
+        long before = usedMemory();
+        if (standard) {
+            memoryResult = new LinkedHashSet<>(input);
+        } else {
+            memoryResult = DistinctElements.distinct(input);
+        }
+        System.gc();
+        long bytes = usedMemory() - before;
+        assertNotNull(memoryResult);
+        memoryResult = null;
+        if (bytes < 0) {
+            bytes = 0;
+        }
+        return bytes / 1024.0;
+    }
+
+    private long usedMemory() {
+        Runtime runtime = Runtime.getRuntime();
+        return runtime.totalMemory() - runtime.freeMemory();
+    }
+
+    private List<Integer> randomList(int n, int bound) {
+        List<Integer> input = new ArrayList<>();
+        Random random = new Random(42);
+        for (int i = 0; i < n; i++) {
+            input.add(random.nextInt(bound));
+        }
+        return input;
+    }
+
     private String wordCorpus() {
-        String[] words = {
-            "алгоритм", "массив", "куча", "ключ", "таблица", "поиск", "список", "время",
-            "память", "данные", "тест", "java", "структура", "очередь", "элемент"
-        };
-        String[] separators = {" ", ", ", ". ", "!\n", "; "};
-        Random random = new Random(41);
+        String line = "Алгоритм массив куча ключ таблица поиск список время память данные тест java "
+                + "структура очередь элемент. Алгоритм массив куча! ";
+        int lineBytes = line.getBytes(StandardCharsets.UTF_8).length;
         StringBuilder text = new StringBuilder();
         int bytes = 0;
         while (bytes < 1_048_576) {
-            int index = (int) (Math.pow(random.nextDouble(), 2) * words.length);
-            String word = random.nextBoolean() ? words[index].toUpperCase(Locale.ROOT) : words[index];
-            String token = word + separators[random.nextInt(separators.length)];
-            text.append(token);
-            bytes += token.getBytes(StandardCharsets.UTF_8).length;
+            text.append(line);
+            bytes += lineBytes;
         }
         return text.toString();
     }
 
     private Map<String, Integer> standardCount(String text) {
-        Map<String, Integer> result = new HashMap<>();
-        Matcher matcher = WORD.matcher(text.toLowerCase(Locale.ROOT));
-        while (matcher.find()) {
-            result.merge(matcher.group(), 1, Integer::sum);
+        Map<String, Integer> counts = new HashMap<>();
+        StringBuilder word = new StringBuilder();
+        text = text.toLowerCase(Locale.ROOT);
+        for (int i = 0; i <= text.length(); i++) {
+            if (i < text.length() && Character.isLetterOrDigit(text.charAt(i))) {
+                word.append(text.charAt(i));
+            } else if (word.length() > 0) {
+                String key = word.toString();
+                Integer count = counts.get(key);
+                if (count == null) {
+                    counts.put(key, 1);
+                } else {
+                    counts.put(key, count + 1);
+                }
+                word.setLength(0);
+            }
         }
-        return result;
+        return counts;
     }
 }

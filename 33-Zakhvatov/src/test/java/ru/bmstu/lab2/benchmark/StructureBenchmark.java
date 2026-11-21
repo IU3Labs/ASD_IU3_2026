@@ -1,118 +1,148 @@
 package ru.bmstu.lab2.benchmark;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
 import ru.bmstu.lab2.task_1a_1b_1d.PriorityQueueCustom;
 import ru.bmstu.lab2.task_2a_2b.HashMapCustom;
 
-/** Эксперименты 1A, 1B, 1D, 2A, 2B на одинаковых заранее подготовленных данных. */
+/** Замеры очереди и двух вариантов таблицы. */
 final class StructureBenchmark {
-    private final BenchmarkSupport timer;
-
-    StructureBenchmark(BenchmarkSupport timer) {
-        this.timer = timer;
-    }
-
     String run() {
-        StringBuilder report = new StringBuilder("## Структуры: 10 000, 50 000, 100 000 элементов\n\n");
-        report.append("| Структура | Операция | N | Среднее, мс | σ, мс | Выделено, МиБ |\n");
-        report.append("|---|---|---:|---:|---:|---:|\n");
-        for (int size : new int[]{10_000, 50_000, 100_000}) {
-            Integer[] input = randomInput(size);
-            addRow(report, "PriorityQueueCustom", "add + poll", size,
-                    timer.measure(() -> customQueue(input, null)));
-            addRow(report, "java.util.PriorityQueue", "add + poll", size,
-                    timer.measure(() -> standardQueue(input)));
-            for (HashMapCustom.Probing probing : HashMapCustom.Probing.values()) {
-                addRow(report, "HashMapCustom " + probing, "put + get + remove", size,
-                        timer.measure(() -> customMap(input, probing)));
+        StringBuilder table = new StringBuilder();
+        table.append("| Структура | Операция | N элементов | Среднее время (мс) | Примечание |\n");
+        table.append("|---|---|---:|---:|---|\n");
+        for (int n : new int[]{10_000, 50_000, 100_000}) {
+            Integer[] input = randomArray(n);
+            row(table, "PriorityQueueCustom", "add + poll (цикл)", n, queueTime(input, false, false), "min-heap");
+            row(table, "java.util.PriorityQueue", "add + poll (цикл)", n, queueTime(input, true, false), "min-heap");
+            row(table, "HashMapCustom", "put + get + remove", n,
+                    mapTime(input, false, HashMapCustom.Probing.LINEAR), "линейное пробирование");
+            row(table, "HashMapCustom", "put + get + remove", n,
+                    mapTime(input, false, HashMapCustom.Probing.QUADRATIC), "квадратичное пробирование");
+            row(table, "java.util.HashMap", "put + get + remove", n,
+                    mapTime(input, true, HashMapCustom.Probing.LINEAR), "");
+            if (n == 100_000) {
+                row(table, "PriorityQueueCustom", "add + poll (цикл)", n,
+                        queueTime(input, false, true), "1B: max-heap, тот же вход");
+                row(table, "PriorityQueueCustom", "построение через add", n, buildTime(input, false), "1D");
+                row(table, "PriorityQueueCustom", "построение heapify", n, buildTime(input, true), "1D");
             }
-            addRow(report, "java.util.HashMap", "put + get + remove", size,
-                    timer.measure(() -> standardMap(input)));
         }
-        appendHeapExperiments(report);
-        appendProbeExperiment(report);
-        return report.toString();
+        table.append('\n');
+        appendProbes(table);
+        return table.toString();
     }
 
-    private void appendHeapExperiments(StringBuilder report) {
-        Integer[] input = randomInput(100_000);
-        report.append("\n## 1B: min-heap и max-heap, 100 000 одинаковых случайных чисел\n\n");
-        report.append("| Режим | Среднее, мс | σ, мс | Выделено, МиБ |\n|---|---:|---:|---:|\n");
-        report.append("| min-heap | ").append(timer.measure(() -> customQueue(input, null)).cells()).append(" |\n");
-        report.append("| max-heap | ")
-                .append(timer.measure(() -> customQueue(input, Comparator.reverseOrder())).cells()).append(" |\n");
-        report.append("\nОба режима выполняют add + poll и имеют O(n log n). Разница определяется порядком\n");
-        report.append("сравнений, ветвлениями, работой компаратора и шумом измерения, а не сменой асимптотики.\n");
-        report.append("\n## 1D: построение кучи из 100 000 элементов\n\n");
-        report.append("| Способ | Среднее, мс | σ, мс | Выделено, МиБ |\n|---|---:|---:|---:|\n");
-        report.append("| Последовательные add | ").append(timer.measure(() -> buildByAdds(input)).cells());
-        report.append(" |\n| Bottom-up heapify | ")
-                .append(timer.measure(() -> new PriorityQueueCustom<>(input).peek()).cells()).append(" |\n");
-        report.append("\nИзвлечение исключено из этого замера. Heapify имеет O(n), последовательные add —\n");
-        report.append("O(n log n) в худшем случае; на случайных данных add часто требует мало подъёмов.\n");
-    }
-
-    private void appendProbeExperiment(StringBuilder report) {
-        Integer[] input = randomInput(50_000);
-        report.append("\n## 2B: среднее число проб на 50 000 get\n\n");
-        report.append("25 000 успешных и 25 000 неуспешных запросов; таблицы содержат одинаковые ключи.\n\n");
-        report.append("| Вариант | Пар | Ёмкость | Загрузка | Проб/get |\n|---|---:|---:|---:|---:|\n");
-        for (HashMapCustom.Probing probing : HashMapCustom.Probing.values()) {
-            HashMapCustom<Integer, Integer> map = new HashMapCustom<>(probing);
-            for (int key : input) {
-                map.put(key, key);
+    private double queueTime(Integer[] input, boolean standard, boolean maxHeap) {
+        long expected = standardQueue(input, maxHeap);
+        long total = 0;
+        for (int run = -1; run < Lab2BenchmarkTest.REPEATS; run++) {
+            long start = System.nanoTime();
+            long result;
+            if (standard) {
+                result = standardQueue(input, maxHeap);
+            } else {
+                result = customQueue(input, maxHeap);
             }
-            map.resetProbeStatistics();
-            for (int index = 0; index < 25_000; index++) {
-                map.get(input[index]);
-                int absent = input[index] + 1;
-                while (map.containsKey(absent)) {
-                    absent++;
-                }
-                map.get(absent);
+            long elapsed = System.nanoTime() - start;
+            assertEquals(expected, result);
+            if (run >= 0) {
+                total += elapsed;
             }
-            report.append(String.format(java.util.Locale.ROOT, "| %s | %d | %d | %.3f | %.3f |%n",
-                    probing, map.size(), map.capacity(), map.size() / (double) map.capacity(),
-                    map.averageGetProbes()));
         }
-        report.append("\nКвадратичное пробирование разносит первичные кластеры. При одинаковом начальном\n");
-        report.append("хеше последовательности всё ещё совпадают, поэтому вторичная кластеризация остаётся.\n");
+        return total / Lab2BenchmarkTest.REPEATS / 1_000_000.0;
     }
 
-    private long customQueue(Integer[] input, Comparator<Integer> comparator) {
+    private long customQueue(Integer[] input, boolean maxHeap) {
+        Comparator<Integer> comparator = null;
+        if (maxHeap) {
+            comparator = Comparator.reverseOrder();
+        }
         PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>(comparator);
         for (Integer value : input) {
             queue.add(value);
         }
-        long checksum = 0;
+        long sum = 0;
         while (!queue.isEmpty()) {
-            checksum = 31 * checksum + queue.poll();
+            sum = sum * 31 + queue.poll();
         }
-        return checksum;
+        return sum;
     }
 
-    private long standardQueue(Integer[] input) {
-        PriorityQueue<Integer> queue = new PriorityQueue<>();
+    private long standardQueue(Integer[] input, boolean maxHeap) {
+        Comparator<Integer> comparator = null;
+        if (maxHeap) {
+            comparator = Comparator.reverseOrder();
+        }
+        PriorityQueue<Integer> queue = new PriorityQueue<>(11, comparator);
         for (Integer value : input) {
             queue.add(value);
         }
-        long checksum = 0;
+        long sum = 0;
         while (!queue.isEmpty()) {
-            checksum = 31 * checksum + queue.poll();
+            sum = sum * 31 + queue.poll();
         }
-        return checksum;
+        return sum;
     }
 
-    private long buildByAdds(Integer[] input) {
-        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
-        for (Integer value : input) {
-            queue.add(value);
+    private double buildTime(Integer[] input, boolean heapify) {
+        long total = 0;
+        for (int run = -1; run < Lab2BenchmarkTest.REPEATS; run++) {
+            long start = System.nanoTime();
+            PriorityQueueCustom<Integer> queue;
+            if (heapify) {
+                queue = new PriorityQueueCustom<>(input);
+            } else {
+                queue = new PriorityQueueCustom<>();
+                for (Integer value : input) {
+                    queue.add(value);
+                }
+            }
+            long elapsed = System.nanoTime() - start;
+            assertEquals(input.length, queue.size());
+            assertEquals(minimum(input), queue.peek());
+            if (run >= 0) {
+                total += elapsed;
+            }
         }
-        return queue.peek();
+        return total / Lab2BenchmarkTest.REPEATS / 1_000_000.0;
+    }
+
+    private int minimum(Integer[] input) {
+        int result = input[0];
+        for (int value : input) {
+            if (value < result) {
+                result = value;
+            }
+        }
+        return result;
+    }
+
+    private double mapTime(Integer[] input, boolean standard, HashMapCustom.Probing probing) {
+        long expected = 0;
+        for (int key : input) {
+            expected += key;
+        }
+        long total = 0;
+        for (int run = -1; run < Lab2BenchmarkTest.REPEATS; run++) {
+            long start = System.nanoTime();
+            long result;
+            if (standard) {
+                result = standardMap(input);
+            } else {
+                result = customMap(input, probing);
+            }
+            long elapsed = System.nanoTime() - start;
+            assertEquals(expected, result);
+            if (run >= 0) {
+                total += elapsed;
+            }
+        }
+        return total / Lab2BenchmarkTest.REPEATS / 1_000_000.0;
     }
 
     private long customMap(Integer[] input, HashMapCustom.Probing probing) {
@@ -120,38 +150,66 @@ final class StructureBenchmark {
         for (Integer key : input) {
             map.put(key, key);
         }
-        long checksum = 0;
+        long sum = 0;
         for (Integer key : input) {
-            checksum += map.get(key);
+            sum += map.get(key);
         }
         for (Integer key : input) {
             map.remove(key);
         }
-        return checksum + map.size();
+        return sum + map.size();
     }
 
     private long standardMap(Integer[] input) {
-        Map<Integer, Integer> map = new HashMap<>();
+        HashMap<Integer, Integer> map = new HashMap<>();
         for (Integer key : input) {
             map.put(key, key);
         }
-        long checksum = 0;
+        long sum = 0;
         for (Integer key : input) {
-            checksum += map.get(key);
+            sum += map.get(key);
         }
         for (Integer key : input) {
             map.remove(key);
         }
-        return checksum + map.size();
+        return sum + map.size();
     }
 
-    private Integer[] randomInput(int size) {
-        return new Random(20261121L + size).ints(size).boxed().toArray(Integer[]::new);
+    private void appendProbes(StringBuilder table) {
+        Integer[] input = randomArray(50_000);
+        table.append("| Пробирование (2B) | Число get | Среднее число проб | Примечание |\n");
+        table.append("|---|---:|---:|---|\n");
+        for (HashMapCustom.Probing probing : HashMapCustom.Probing.values()) {
+            HashMapCustom<Integer, Integer> map = new HashMapCustom<>(probing);
+            for (Integer key : input) {
+                map.put(key, key);
+            }
+            map.resetProbeStatistics();
+            for (int i = 0; i < 25_000; i++) {
+                map.get(input[i]);
+                int missing = input[i] + 1;
+                while (map.containsKey(missing)) {
+                    missing++;
+                }
+                map.get(missing);
+            }
+            table.append("| ").append(probing).append(" | 50000 | ");
+            table.append(Lab2BenchmarkTest.number(map.averageGetProbes()));
+            table.append(" | 25000 успешных и 25000 неуспешных запросов |\n");
+        }
     }
 
-    private void addRow(StringBuilder report, String structure, String operation, int size,
-            BenchmarkSupport.Measurement measurement) {
-        report.append("| ").append(structure).append(" | ").append(operation).append(" | ").append(size);
-        report.append(" | ").append(measurement.cells()).append(" |\n");
+    private Integer[] randomArray(int n) {
+        Random random = new Random(42);
+        Integer[] input = new Integer[n];
+        for (int i = 0; i < n; i++) {
+            input[i] = random.nextInt();
+        }
+        return input;
+    }
+
+    private void row(StringBuilder table, String structure, String operation, int n, double time, String note) {
+        table.append("| ").append(structure).append(" | ").append(operation).append(" | ").append(n);
+        table.append(" | ").append(Lab2BenchmarkTest.number(time)).append(" | ").append(note).append(" |\n");
     }
 }
