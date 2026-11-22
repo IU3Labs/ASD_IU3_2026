@@ -1,0 +1,118 @@
+package ru.bmstu.lab02.task1a;
+
+import java.util.NoSuchElementException;
+import java.util.Random;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+/**
+ * Юнит-тесты для {@link PriorityQueueCustom} (задача 1A).
+ */
+class PriorityQueueCustomTest {
+
+    private static final long RANDOM_SEED = 42L;
+    private static final int STRESS_TEST_SIZE = 10_000;
+    private static final int MAX_RANDOM_BOUND = 100_000;
+
+    @Test
+    void shouldAddAndPeekSingleElement() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        queue.add(42);
+        assertEquals(42, queue.peek());
+        assertEquals(1, queue.size());
+    }
+
+    @Test
+    void shouldReturnMinElementWhenPolling() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        queue.add(5);
+        queue.add(1);
+        queue.add(3);
+        assertEquals(1, queue.poll());
+        assertEquals(3, queue.poll());
+        assertEquals(5, queue.poll());
+        assertTrue(queue.isEmpty());
+    }
+
+    @Test
+    void shouldUpdateSizeAndEmptyStatusCorrectly() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        assertTrue(queue.isEmpty());
+        assertEquals(0, queue.size());
+        queue.add(10);
+        assertFalse(queue.isEmpty());
+        assertEquals(1, queue.size());
+    }
+
+    @Test
+    void shouldNotRemoveElementWhenPeeking() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        queue.add(7);
+        queue.peek();
+        assertEquals(1, queue.size());
+        assertEquals(7, queue.peek());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenPollingEmptyQueue() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        assertThrows(NoSuchElementException.class, queue::poll);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenPeekingEmptyQueue() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        assertThrows(NoSuchElementException.class, queue::peek);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAddingNull() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        assertThrows(IllegalArgumentException.class, () -> queue.add(null));
+    }
+
+    @Test
+    void shouldHandleDuplicateElements() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        queue.add(2);
+        queue.add(2);
+        queue.add(2);
+        assertEquals(2, queue.poll());
+        assertEquals(2, queue.poll());
+        assertEquals(2, queue.poll());
+        assertTrue(queue.isEmpty());
+    }
+
+    @Test
+    void shouldExpandArrayAutomaticallyWhenCapacityExceeded() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        int totalElements = 100;
+        for (int i = totalElements; i >= 1; i--) {
+            queue.add(i);
+        }
+        assertEquals(totalElements, queue.size());
+        for (int expected = 1; expected <= totalElements; expected++) {
+            assertEquals(expected, queue.poll());
+        }
+    }
+
+    @Test
+    void shouldExtractInNonDecreasingOrderOnStressDataset() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        Random random = new Random(RANDOM_SEED);
+        for (int i = 0; i < STRESS_TEST_SIZE; i++) {
+            queue.add(random.nextInt(MAX_RANDOM_BOUND));
+        }
+        int previous = Integer.MIN_VALUE;
+        for (int i = 0; i < STRESS_TEST_SIZE; i++) {
+            int current = queue.poll();
+            assertTrue(current >= previous);
+            previous = current;
+        }
+        assertTrue(queue.isEmpty());
+    }
+}
