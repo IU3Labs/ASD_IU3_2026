@@ -11,10 +11,11 @@ import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import ru.bmstu.lab2.task_2.HashMapCustom.Probing;
 
-/** Воспроизводимые замеры для задач 2A–2B. */
+/** Воспроизводимые замеры для задач 2A–2C. */
 public final class HashMapBenchmark {
     private static final int[] SIZES = {10_000, 50_000, 100_000};
     private static final int QUERY_COUNT = 50_000;
+    private static final int COLLISION_COUNT = 10_000;
     private static final int WARMUPS = 3;
     private static final int RUNS = 5;
     private static final int SEED = 2026;
@@ -39,6 +40,7 @@ public final class HashMapBenchmark {
         Workload<Integer> medium = workload(pool, 50_000);
         printProbes(medium, Probing.LINEAR);
         printProbes(medium, Probing.QUADRATIC);
+        benchmarkCollisions(pool);
     }
 
     private static Integer[] uniqueKeys(int count) {
@@ -64,6 +66,23 @@ public final class HashMapBenchmark {
             queries[i + 1] = pool[size + i / 2];
         }
         return new Workload<>(keys, queries, queries.length / 2);
+    }
+
+    private static void benchmarkCollisions(Integer[] pool) {
+        String[] normal = new String[COLLISION_COUNT];
+        CollisionKey[] colliding = new CollisionKey[COLLISION_COUNT];
+        for (int i = 0; i < normal.length; i++) {
+            normal[i] = Integer.toHexString(pool[i]);
+            colliding[i] = new CollisionKey(normal[i]);
+        }
+        printTiming(
+                "normal-strings",
+                new Workload<>(normal, normal, normal.length),
+                () -> customMap(Probing.LINEAR));
+        printTiming(
+                "constant-hash",
+                new Workload<>(colliding, colliding, colliding.length),
+                () -> customMap(Probing.LINEAR));
     }
 
     private static void printProbes(Workload<Integer> workload, Probing probing) {

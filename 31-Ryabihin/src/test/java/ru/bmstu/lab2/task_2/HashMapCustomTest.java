@@ -15,6 +15,7 @@ import ru.bmstu.lab2.task_2.HashMapCustom.Probing;
 
 class HashMapCustomTest {
     private static final double DEFAULT_LOAD_FACTOR = 0.75;
+    private static final int COLLISION_COUNT = 10_000;
 
     @ParameterizedTest
     @EnumSource(Probing.class)
@@ -90,9 +91,10 @@ class HashMapCustomTest {
     @ParameterizedTest
     @EnumSource(Probing.class)
     void shouldKeepLaterKeysReachableAfterRemovingAConflict(Probing probing) {
-        HashMapCustom<Integer, Integer> table = new HashMapCustom<>(probing, DEFAULT_LOAD_FACTOR);
-        int first = 0;
-        int second = 16;
+        HashMapCustom<CollisionKey, Integer> table =
+                new HashMapCustom<>(probing, DEFAULT_LOAD_FACTOR);
+        CollisionKey first = new CollisionKey("first");
+        CollisionKey second = new CollisionKey("second");
         table.put(first, 1);
         table.put(second, 2);
 
@@ -105,10 +107,11 @@ class HashMapCustomTest {
     @ParameterizedTest
     @EnumSource(Probing.class)
     void shouldReuseATombstoneAndUpdateTheKeyBehindIt(Probing probing) {
-        HashMapCustom<Integer, Integer> table = new HashMapCustom<>(probing, DEFAULT_LOAD_FACTOR);
-        int first = 0;
-        int second = 16;
-        int third = 32;
+        HashMapCustom<CollisionKey, Integer> table =
+                new HashMapCustom<>(probing, DEFAULT_LOAD_FACTOR);
+        CollisionKey first = new CollisionKey("first");
+        CollisionKey second = new CollisionKey("second");
+        CollisionKey third = new CollisionKey("third");
         table.put(first, 1);
         table.put(second, 2);
         table.remove(first);
@@ -167,6 +170,30 @@ class HashMapCustomTest {
             assertEquals(expected.size(), actual.size());
             assertEquals(expected.get(query), actual.get(query));
             assertEquals(expected.containsKey(query), actual.containsKey(query));
+        }
+    }
+
+    @ParameterizedTest
+    @EnumSource(Probing.class)
+    void shouldHandleTenThousandCollidingKeys(Probing probing) {
+        HashMapCustom<CollisionKey, Integer> table =
+                new HashMapCustom<>(probing, DEFAULT_LOAD_FACTOR);
+        CollisionKey[] keys = new CollisionKey[COLLISION_COUNT];
+        for (int i = 0; i < keys.length; i++) {
+            keys[i] = new CollisionKey("key-" + i);
+            table.put(keys[i], i);
+        }
+        assertEquals(COLLISION_COUNT, table.size());
+        for (int i = 0; i < keys.length; i++) {
+            assertEquals(i, table.get(keys[i]));
+        }
+        for (int i = 0; i < keys.length; i += 2) {
+            assertTrue(table.remove(keys[i]));
+        }
+        assertEquals(COLLISION_COUNT / 2, table.size());
+        for (int i = 0; i < keys.length; i += 2) {
+            assertFalse(table.containsKey(keys[i]));
+            assertEquals(i + 1, table.get(keys[i + 1]));
         }
     }
 
