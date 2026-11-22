@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-/** задача 1A — минимальная двоичная куча на растущем массиве */
+/** задачи 1A и 1D — минимальная двоичная куча на растущем массиве */
 public final class PriorityQueueCustom<T extends Comparable<? super T>> {
     private static final int INITIAL_CAPACITY = 16;
     private Object[] values;
@@ -13,6 +13,18 @@ public final class PriorityQueueCustom<T extends Comparable<? super T>> {
     /** создаёт пустую очередь */
     public PriorityQueueCustom() {
         values = new Object[INITIAL_CAPACITY];
+    }
+
+    /** строит кучу снизу вверх на собственной копии массива */
+    public PriorityQueueCustom(T[] array) {
+        values = Arrays.copyOf(array, Math.max(1, array.length), Object[].class);
+        size = array.length;
+        for (T item : array) {
+            Objects.requireNonNull(item);
+        }
+        for (int i = size / 2 - 1; i >= 0; i--) {
+            siftDown(i);
+        }
     }
 
     /** добавляет элемент согласно естественному порядку */

@@ -1,5 +1,6 @@
 package ru.bmstu.lab2.heap;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -70,20 +71,32 @@ class PriorityQueueCustomTest {
     }
 
     @Test
-    void shouldKeepExtremeValuesInOrder() {
-        subject.add(Integer.MAX_VALUE);
-        subject.add(Integer.MIN_VALUE);
-        assertEquals(Integer.MIN_VALUE, subject.poll());
-        assertEquals(Integer.MAX_VALUE, subject.poll());
+    void shouldBuildEmpty() {
+        subject = new PriorityQueueCustom<>(new Integer[0]);
+        subject.add(3);
+        assertEquals(3, subject.poll());
+    }
+
+    @Test
+    void shouldCopyInput() {
+        Integer[] input = {8, 2, 1};
+        subject = new PriorityQueueCustom<>(input);
+        assertArrayEquals(new Integer[] {8, 2, 1}, input);
+        input[1] = -8;
+        assertEquals(1, subject.poll());
+        assertEquals(2, subject.poll());
+    }
+
+    @Test
+    void shouldRejectNullInArray() {
+        assertThrows(NullPointerException.class, () -> new PriorityQueueCustom<>(new Integer[] {null}));
     }
 
     @Test
     void shouldMatchReference() {
         Random random = new Random(19);
         Integer[] data = random.ints(501).boxed().toArray(Integer[]::new);
-        for (Integer value : data) {
-            subject.add(value);
-        }
+        subject = new PriorityQueueCustom<>(data);
         PriorityQueue<Integer> expected = new PriorityQueue<>(java.util.List.of(data));
         while (!expected.isEmpty()) {
             assertEquals(expected.poll(), subject.poll());

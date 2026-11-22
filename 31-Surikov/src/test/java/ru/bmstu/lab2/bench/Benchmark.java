@@ -9,6 +9,7 @@ import ru.bmstu.lab2.heap.PriorityQueueCustom;
 /** воспроизводимые сравнения структур на одинаковых входных массивах */
 public final class Benchmark {
     private static final int REPETITIONS = 10;
+    private static volatile Object retained;
     private static volatile long checksum;
 
     private Benchmark() {
@@ -20,7 +21,25 @@ public final class Benchmark {
             Integer[] data = new Random(123).ints(n).boxed().toArray(Integer[]::new);
             measure("PriorityQueueCustom", "add + poll", n, () -> heap(data, false));
             measure("PriorityQueue", "add + poll", n, () -> heap(data, true));
+            if (n == 100_000) {
+                measure("PriorityQueueCustom", "add", n, () -> build(data, false));
+                measure("PriorityQueueCustom", "heapify", n, () -> build(data, true));
+            }
         }
+    }
+
+    private static long build(Integer[] data, boolean bottomUp) {
+        PriorityQueueCustom<Integer> queue;
+        if (bottomUp) {
+            queue = new PriorityQueueCustom<>(data);
+        } else {
+            queue = new PriorityQueueCustom<>();
+            for (Integer value : data) {
+                queue.add(value);
+            }
+        }
+        retained = queue;
+        return queue.peek();
     }
 
     private static long heap(Integer[] data, boolean library) {
