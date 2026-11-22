@@ -1,6 +1,7 @@
 package ru.bmstu.lab02.task1b;
 
 import java.util.Comparator;
+import java.util.NoSuchElementException;
 
 /**
  * Очередь с приоритетом, поддерживающая режимы min-heap и max-heap через компаратор.
@@ -33,6 +34,77 @@ public class PriorityQueueComparator<T> {
         this.comparator = comparator;
         this.heap = new Object[DEFAULT_CAPACITY];
         this.size = 0;
+    }
+
+    /**
+     * Добавляет элемент в очередь за O(log n).
+     *
+     * @param item добавляемый элемент (не null)
+     * @throws IllegalArgumentException если передан null
+     */
+    public void add(T item) {
+        if (item == null) {
+            throw new IllegalArgumentException("Element cannot be null");
+        }
+        if (size == heap.length) {
+            grow();
+        }
+        heap[size] = item;
+        siftUp(size);
+        size++;
+    }
+
+    /**
+     * Извлекает и возвращает корневой элемент кучи за O(log n).
+     *
+     * @return элемент с наивысшим приоритетом
+     * @throws NoSuchElementException если очередь пуста
+     */
+    @SuppressWarnings("unchecked")
+    public T poll() {
+        if (isEmpty()) {
+            throw new NoSuchElementException("Queue is empty");
+        }
+        T result = (T) heap[0];
+        heap[0] = heap[size - 1];
+        heap[size - 1] = null;
+        size--;
+        if (size > 0) {
+            siftDown(0);
+        }
+        return result;
+    }
+
+    /**
+     * Возвращает корневой элемент без удаления за O(1).
+     *
+     * @return элемент с наивысшим приоритетом
+     * @throws NoSuchElementException если очередь пуста
+     */
+    @SuppressWarnings("unchecked")
+    public T peek() {
+        if (isEmpty()) {
+            throw new NoSuchElementException("Queue is empty");
+        }
+        return (T) heap[0];
+    }
+
+    /**
+     * Возвращает количество элементов в очереди за O(1).
+     *
+     * @return размер очереди
+     */
+    public int size() {
+        return size;
+    }
+
+    /**
+     * Проверяет, пуста ли очередь, за O(1).
+     *
+     * @return true, если очередь пуста
+     */
+    public boolean isEmpty() {
+        return size == 0;
     }
 
     private void siftUp(int index) {
@@ -75,6 +147,12 @@ public class PriorityQueueComparator<T> {
             return comparator.compare(first, second);
         }
         return ((Comparable<? super T>) first).compareTo(second);
+    }
+
+    private void grow() {
+        Object[] newHeap = new Object[heap.length * GROWTH_FACTOR];
+        System.arraycopy(heap, 0, newHeap, 0, heap.length);
+        heap = newHeap;
     }
 
     private void swap(int i, int j) {
