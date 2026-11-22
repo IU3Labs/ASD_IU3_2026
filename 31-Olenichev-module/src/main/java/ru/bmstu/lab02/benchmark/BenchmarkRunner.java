@@ -15,5 +15,6 @@ public final class BenchmarkRunner {
      */
     public static void main(String[] args) {
         Task1ABenchmark.run();
+        Task1BBenchmark.run();
     }
 }
