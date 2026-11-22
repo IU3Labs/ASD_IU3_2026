@@ -1,8 +1,11 @@
 package ru.bmstu.lab02.task1c;
 
+import java.util.NoSuchElementException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -82,5 +85,61 @@ class PriorityQueueRemovableTest {
         assertEquals(2, queue.poll());
         assertEquals(5, queue.poll());
         assertEquals(8, queue.poll());
+    }
+
+    @Test
+    void shouldReturnFalseWhenRemovingNonExistentElement() {
+        PriorityQueueRemovable<Integer> queue = new PriorityQueueRemovable<>();
+        queue.add(5);
+        queue.add(10);
+
+        assertFalse(queue.remove(99));
+        assertEquals(2, queue.size());
+    }
+
+    @Test
+    void shouldReturnFalseWhenRemovingFromEmptyQueue() {
+        PriorityQueueRemovable<Integer> queue = new PriorityQueueRemovable<>();
+        assertFalse(queue.remove(1));
+        assertTrue(queue.isEmpty());
+    }
+
+    @Test
+    void shouldReturnFalseWhenRemovingNull() {
+        PriorityQueueRemovable<Integer> queue = new PriorityQueueRemovable<>();
+        queue.add(1);
+        assertFalse(queue.remove(null));
+        assertEquals(1, queue.size());
+    }
+
+    @Test
+    void shouldBecomeEmptyAfterRemovingSingleElement() {
+        PriorityQueueRemovable<Integer> queue = new PriorityQueueRemovable<>();
+        queue.add(42);
+
+        assertTrue(queue.remove(42));
+        assertTrue(queue.isEmpty());
+        assertEquals(0, queue.size());
+        assertThrows(NoSuchElementException.class, queue::peek);
+    }
+
+    @Test
+    void shouldMaintainHeapInvariantAfterMultipleRemovals() {
+        PriorityQueueRemovable<Integer> queue = new PriorityQueueRemovable<>();
+        for (int i = 1; i <= 20; i++) {
+            queue.add(i);
+        }
+        assertTrue(queue.remove(1));
+        assertTrue(queue.remove(10));
+        assertTrue(queue.remove(20));
+        assertTrue(queue.remove(7));
+
+        assertEquals(16, queue.size());
+        int prev = Integer.MIN_VALUE;
+        while (!queue.isEmpty()) {
+            int cur = queue.poll();
+            assertTrue(cur > prev);
+            prev = cur;
+        }
     }
 }
