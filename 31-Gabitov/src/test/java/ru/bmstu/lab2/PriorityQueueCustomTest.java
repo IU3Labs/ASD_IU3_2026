@@ -203,4 +203,91 @@ class PriorityQueueCustomTest {
             assertEquals(expected.poll(), actual.poll());
         }
     }
+
+    @Test
+    void shouldRemoveRoot() {
+        PriorityQueueCustom<Integer> queue = createQueue(new int[] {1, 5, 3, 7});
+        assertTrue(queue.remove(1));
+        assertOrder(queue, new int[] {3, 5, 7});
+    }
+
+    @Test
+    void shouldRestoreHeapDownAfterRemoval() {
+        PriorityQueueCustom<Integer> queue = createQueue(new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+        assertTrue(queue.remove(2));
+        assertOrder(queue, new int[] {1, 3, 4, 5, 6, 7, 8, 9, 10});
+    }
+
+    @Test
+    void shouldRestoreHeapUpAfterRemoval() {
+        PriorityQueueCustom<Integer> queue = createQueue(new int[] {1, 10, 2, 11, 12, 3, 4});
+        assertTrue(queue.remove(11));
+        assertOrder(queue, new int[] {1, 2, 3, 4, 10, 12});
+    }
+
+    @Test
+    void shouldRemoveLastAndOnlyItem() {
+        PriorityQueueCustom<Integer> queue = createQueue(new int[] {1, 3});
+        assertTrue(queue.remove(3));
+        assertTrue(queue.remove(1));
+        assertTrue(queue.isEmpty());
+    }
+
+    @Test
+    void shouldReturnFalseForMissingItem() {
+        PriorityQueueCustom<Integer> queue = createQueue(new int[] {2, 3});
+        assertFalse(queue.remove(9));
+        assertOrder(queue, new int[] {2, 3});
+    }
+
+    @Test
+    void shouldReturnFalseForEmptyQueueAndNull() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        assertFalse(queue.remove(4));
+        assertFalse(queue.remove(null));
+    }
+
+    @Test
+    void shouldRemoveOnlyOneDuplicate() {
+        PriorityQueueCustom<Integer> queue = createQueue(new int[] {1, 2, 2, 3});
+        assertTrue(queue.remove(2));
+        assertOrder(queue, new int[] {1, 2, 3});
+    }
+
+    @Test
+    void shouldRemoveWithReverseComparator() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>(Comparator.reverseOrder());
+        for (int value : new int[] {1, 5, 3, 4, 2}) {
+            queue.add(value);
+        }
+        assertTrue(queue.remove(5));
+        assertTrue(queue.remove(3));
+        assertOrder(queue, new int[] {4, 2, 1});
+    }
+
+    @Test
+    void shouldMatchStandardQueueWithRemovals() {
+        Random random = new Random(31);
+        PriorityQueueCustom<Integer> actual = new PriorityQueueCustom<>();
+        PriorityQueue<Integer> expected = new PriorityQueue<>();
+        for (int i = 0; i < 10000; i++) {
+            int value = random.nextInt(100);
+            int operation = random.nextInt(3);
+            if (operation == 0) {
+                actual.add(value);
+                expected.add(value);
+            } else if (operation == 1) {
+                assertEquals(expected.remove(value), actual.remove(value));
+            } else if (!expected.isEmpty()) {
+                assertEquals(expected.poll(), actual.poll());
+            }
+            assertEquals(expected.size(), actual.size());
+            if (!expected.isEmpty()) {
+                assertEquals(expected.peek(), actual.peek());
+            }
+        }
+        while (!expected.isEmpty()) {
+            assertEquals(expected.poll(), actual.poll());
+        }
+    }
 }

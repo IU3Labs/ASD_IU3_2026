@@ -3,7 +3,7 @@ package ru.bmstu.lab2;
 import java.util.Comparator;
 import java.util.NoSuchElementException;
 
-/** Задачи 1A, 1B. Очередь с приоритетом на двоичной куче в массиве. */
+/** Задачи 1A, 1B, 1C. Очередь с приоритетом на двоичной куче в массиве. */
 public class PriorityQueueCustom<T> {
     private static final int INITIAL_CAPACITY = 8;
     private Object[] data = new Object[INITIAL_CAPACITY];
@@ -61,6 +61,35 @@ public class PriorityQueueCustom<T> {
     /** Проверяет, пуста ли очередь, за O(1). */
     public boolean isEmpty() {
         return size == 0;
+    }
+
+    /** Удаляет первое совпадение в массиве кучи за O(n); null или отсутствие дают false. */
+    public boolean remove(T item) {
+        if (item == null) {
+            return false;
+        }
+        for (int i = 0; i < size; i++) {
+            if (item.equals(data[i])) {
+                removeAt(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void removeAt(int index) {
+        size--;
+        data[index] = data[size];
+        data[size] = null;
+        if (index == size) {
+            return;
+        }
+        int parent = (index - 1) / 2;
+        if (index > 0 && compare(elementAt(index), elementAt(parent)) < 0) {
+            siftUp(index);
+        } else {
+            siftDown(index);
+        }
     }
 
     private void growIfNeeded() {
