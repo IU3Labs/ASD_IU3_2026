@@ -3,7 +3,7 @@ package ru.bmstu.lab2;
 import java.util.Comparator;
 import java.util.NoSuchElementException;
 
-/** Задачи 1A, 1B, 1C. Очередь с приоритетом на двоичной куче в массиве. */
+/** Задачи 1A–1D. Очередь с приоритетом на двоичной куче в массиве. */
 public class PriorityQueueCustom<T> {
     private static final int INITIAL_CAPACITY = 8;
     private Object[] data = new Object[INITIAL_CAPACITY];
@@ -17,6 +17,23 @@ public class PriorityQueueCustom<T> {
     /** Создаёт очередь с заданным порядком; null означает естественный порядок. */
     public PriorityQueueCustom(Comparator<? super T> comparator) {
         this.comparator = comparator;
+    }
+
+    /** Копирует элементы массива и строит кучу снизу вверх за O(n). */
+    public PriorityQueueCustom(T[] array) {
+        if (array == null) {
+            throw new NullPointerException("Массив не должен быть null");
+        }
+        data = new Object[Math.max(INITIAL_CAPACITY, array.length)];
+        for (T item : array) {
+            if (item == null) {
+                throw new NullPointerException("Элемент не должен быть null");
+            }
+            data[size++] = item;
+        }
+        for (int i = size / 2 - 1; i >= 0; i--) {
+            siftDown(i);
+        }
     }
 
     /** Добавляет элемент; O(log n) амортизированно с учётом расширения массива. */

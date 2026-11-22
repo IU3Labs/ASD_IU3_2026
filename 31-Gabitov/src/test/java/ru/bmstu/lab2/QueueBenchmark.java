@@ -1,5 +1,6 @@
 package ru.bmstu.lab2;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.PriorityQueue;
@@ -33,6 +34,12 @@ public final class QueueBenchmark {
             measureCycle(values, false);
             measureCycle(values, true);
         }
+        System.out.println();
+        System.out.println("## Построение из 100 000 убывающих элементов, без извлечения");
+        System.out.println();
+        System.out.println("| Структура | Операция | N элементов | Среднее время (мс) | Примечание |");
+        System.out.println("|---|---|---:|---:|---|");
+        measureBuilding(createDescendingValues(100000));
         System.out.println();
         System.out.println("Контрольная сумма: " + checksum + ".");
     }
@@ -99,6 +106,60 @@ public final class QueueBenchmark {
         }
         long elapsed = System.nanoTime() - start;
         checksum = sum;
+        return elapsed;
+    }
+
+    private static Integer[] createDescendingValues(int n) {
+        Integer[] values = new Integer[n];
+        for (int i = 0; i < n; i++) {
+            values[i] = n - i;
+        }
+        return values;
+    }
+
+    private static void measureBuilding(Integer[] values) {
+        double adds = 0;
+        double heapify = 0;
+        double standard = 0;
+        for (int run = -WARMUP_RUNS; run < MEASURE_RUNS; run++) {
+            long first = buildByAdding(values);
+            long second = buildHeap(values);
+            long third = buildStandard(values);
+            if (run >= 0) {
+                adds += first;
+                heapify += second;
+                standard += third;
+            }
+        }
+        printRow("PriorityQueueCustom", "последовательные add", values.length, adds, "O(n log n), верхняя оценка");
+        printRow("PriorityQueueCustom", "конструктор из массива", values.length, heapify, "O(n)");
+        printRow("java.util.PriorityQueue", "конструктор из коллекции", values.length, standard, "O(n)");
+    }
+
+    private static long buildByAdding(Integer[] values) {
+        long start = System.nanoTime();
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>();
+        for (Integer value : values) {
+            queue.add(value);
+        }
+        long elapsed = System.nanoTime() - start;
+        checksum = queue.size() + (long) queue.peek();
+        return elapsed;
+    }
+
+    private static long buildHeap(Integer[] values) {
+        long start = System.nanoTime();
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>(values);
+        long elapsed = System.nanoTime() - start;
+        checksum = queue.size() + (long) queue.peek();
+        return elapsed;
+    }
+
+    private static long buildStandard(Integer[] values) {
+        long start = System.nanoTime();
+        PriorityQueue<Integer> queue = new PriorityQueue<>(Arrays.asList(values));
+        long elapsed = System.nanoTime() - start;
+        checksum = queue.size() + (long) queue.peek();
         return elapsed;
     }
 

@@ -1,5 +1,6 @@
 package ru.bmstu.lab2;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -285,6 +286,78 @@ class PriorityQueueCustomTest {
             if (!expected.isEmpty()) {
                 assertEquals(expected.peek(), actual.peek());
             }
+        }
+        while (!expected.isEmpty()) {
+            assertEquals(expected.poll(), actual.poll());
+        }
+    }
+
+    @Test
+    void shouldBuildHeapFromArray() {
+        Integer[] values = {8, 3, 5, 1, 3};
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>(values);
+        assertOrder(queue, new int[] {1, 3, 3, 5, 8});
+    }
+
+    @Test
+    void shouldNotChangeInputArray() {
+        Integer[] values = {3, 1, 2};
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>(values);
+        queue.poll();
+        queue.add(0);
+        assertArrayEquals(new Integer[] {3, 1, 2}, values);
+    }
+
+    @Test
+    void shouldBuildFromEmptyArrayAndThenGrow() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>(new Integer[0]);
+        assertTrue(queue.isEmpty());
+        for (int i = 20; i >= 0; i--) {
+            queue.add(i);
+        }
+        for (int i = 0; i <= 20; i++) {
+            assertEquals(i, queue.poll());
+        }
+    }
+
+    @Test
+    void shouldBuildFromSingleItem() {
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>(new Integer[] {7});
+        assertOrder(queue, new int[] {7});
+    }
+
+    @Test
+    void shouldRejectNullArrayAndNullElements() {
+        Integer[] missing = null;
+        assertThrows(NullPointerException.class, () -> new PriorityQueueCustom<Integer>(missing));
+        Integer[] values = {1, null, 2};
+        assertThrows(NullPointerException.class, () -> new PriorityQueueCustom<Integer>(values));
+    }
+
+    @Test
+    void shouldBuildFromLargeDescendingArray() {
+        Integer[] values = new Integer[100000];
+        for (int i = 0; i < values.length; i++) {
+            values[i] = values.length - i;
+        }
+        PriorityQueueCustom<Integer> queue = new PriorityQueueCustom<>(values);
+        for (int i = 1; i <= values.length; i++) {
+            assertEquals(i, queue.poll());
+        }
+        assertTrue(queue.isEmpty());
+    }
+
+    @Test
+    void shouldMatchStandardHeapFromRandomArray() {
+        Integer[] values = new Integer[1000];
+        Random random = new Random(31);
+        for (int i = 0; i < values.length; i++) {
+            values[i] = random.nextInt();
+        }
+        PriorityQueueCustom<Integer> actual = new PriorityQueueCustom<>(values);
+        PriorityQueue<Integer> expected = new PriorityQueue<>();
+        for (int value : values) {
+            expected.add(value);
         }
         while (!expected.isEmpty()) {
             assertEquals(expected.poll(), actual.poll());
