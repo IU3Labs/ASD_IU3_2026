@@ -53,12 +53,7 @@ public class PriorityQueueRemovable<T extends Comparable<T>> {
             throw new NoSuchElementException("Queue is empty");
         }
         T result = (T) heap[0];
-        heap[0] = heap[size - 1];
-        heap[size - 1] = null;
-        size--;
-        if (size > 0) {
-            siftDown(0);
-        }
+        removeAt(0);
         return result;
     }
 
@@ -77,6 +72,24 @@ public class PriorityQueueRemovable<T extends Comparable<T>> {
     }
 
     /**
+     * Удаляет первое вхождение указанного элемента за O(n) и восстанавливает свойство кучи.
+     *
+     * @param item удаляемый элемент
+     * @return true, если элемент был найден и удалён
+     */
+    public boolean remove(T item) {
+        if (item == null || isEmpty()) {
+            return false;
+        }
+        int index = findIndex(item);
+        if (index == -1) {
+            return false;
+        }
+        removeAt(index);
+        return true;
+    }
+
+    /**
      * Возвращает текущее количество элементов за O(1).
      *
      * @return размер очереди
@@ -92,6 +105,29 @@ public class PriorityQueueRemovable<T extends Comparable<T>> {
      */
     public boolean isEmpty() {
         return size == 0;
+    }
+
+    private int findIndex(T item) {
+        for (int i = 0; i < size; i++) {
+            if (item.equals(heap[i])) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void removeAt(int index) {
+        int lastIndex = size - 1;
+        if (index == lastIndex) {
+            heap[lastIndex] = null;
+            size--;
+            return;
+        }
+        heap[index] = heap[lastIndex];
+        heap[lastIndex] = null;
+        size--;
+        siftDown(index);
+        siftUp(index);
     }
 
     @SuppressWarnings("unchecked")
