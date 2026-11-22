@@ -36,6 +36,30 @@ public class PriorityQueueHeapify<T extends Comparable<T>> {
     }
 
     /**
+     * Строит min-кучу из переданного массива за O(n) методом просеивания вниз
+     * от последнего внутреннего узла к корню.
+     *
+     * @param array исходный массив элементов
+     * @throws IllegalArgumentException если массив или любой его элемент равен null
+     */
+    public PriorityQueueHeapify(T[] array) {
+        if (array == null) {
+            throw new IllegalArgumentException("Input array cannot be null");
+        }
+        int capacity = Math.max(DEFAULT_CAPACITY, array.length);
+        this.heap = new Object[capacity];
+        this.size = array.length;
+
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] == null) {
+                throw new IllegalArgumentException("Array elements cannot be null");
+            }
+            this.heap[i] = array[i];
+        }
+        buildHeap();
+    }
+
+    /**
      * Добавляет элемент в очередь за O(log n).
      *
      * @param item добавляемый элемент (не null)
@@ -104,6 +128,12 @@ public class PriorityQueueHeapify<T extends Comparable<T>> {
      */
     public boolean isEmpty() {
         return size == 0;
+    }
+
+    private void buildHeap() {
+        for (int i = (size / 2) - 1; i >= 0; i--) {
+            siftDown(i);
+        }
     }
 
     @SuppressWarnings("unchecked")
