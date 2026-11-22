@@ -1,14 +1,22 @@
 package ru.bmstu.lab02.task1b;
 
 import java.util.Comparator;
+import java.util.NoSuchElementException;
+import java.util.Random;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Юнит-тесты для {@link PriorityQueueComparator} (задача 1B).
  */
 class PriorityQueueComparatorTest {
+
+    private static final long RANDOM_SEED = 42L;
+    private static final int STRESS_SIZE = 5_000;
 
     @Test
     void shouldWorkAsMinHeapWithDefaultConstructor() {
@@ -73,5 +81,64 @@ class PriorityQueueComparatorTest {
         assertEquals(-5, maxHeap.poll());
         assertEquals(-50, maxHeap.poll());
         assertEquals(-100, maxHeap.poll());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenPollingOrPeekingEmptyQueue() {
+        PriorityQueueComparator<Integer> queue =
+                new PriorityQueueComparator<>(Comparator.reverseOrder());
+        assertTrue(queue.isEmpty());
+        assertThrows(NoSuchElementException.class, queue::poll);
+        assertThrows(NoSuchElementException.class, queue::peek);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAddingNullElement() {
+        PriorityQueueComparator<Integer> queue = new PriorityQueueComparator<>();
+        assertThrows(IllegalArgumentException.class, () -> queue.add(null));
+    }
+
+    @Test
+    void shouldHandleDuplicateElementsInMaxHeapMode() {
+        PriorityQueueComparator<Integer> maxHeap =
+                new PriorityQueueComparator<>(Comparator.reverseOrder());
+        maxHeap.add(7);
+        maxHeap.add(7);
+        maxHeap.add(3);
+
+        assertEquals(7, maxHeap.poll());
+        assertEquals(7, maxHeap.poll());
+        assertEquals(3, maxHeap.poll());
+        assertTrue(maxHeap.isEmpty());
+    }
+
+    @Test
+    void shouldExpandCapacityDynamicallyInMaxHeapMode() {
+        PriorityQueueComparator<Integer> maxHeap =
+                new PriorityQueueComparator<>(Comparator.reverseOrder());
+        for (int i = 1; i <= 50; i++) {
+            maxHeap.add(i);
+        }
+        assertEquals(50, maxHeap.size());
+        assertFalse(maxHeap.isEmpty());
+        for (int expected = 50; expected >= 1; expected--) {
+            assertEquals(expected, maxHeap.poll());
+        }
+    }
+
+    @Test
+    void shouldExtractInNonIncreasingOrderOnStressDataset() {
+        PriorityQueueComparator<Integer> maxHeap =
+                new PriorityQueueComparator<>(Comparator.reverseOrder());
+        Random random = new Random(RANDOM_SEED);
+        for (int i = 0; i < STRESS_SIZE; i++) {
+            maxHeap.add(random.nextInt());
+        }
+        int previous = Integer.MAX_VALUE;
+        for (int i = 0; i < STRESS_SIZE; i++) {
+            int current = maxHeap.poll();
+            assertTrue(current <= previous);
+            previous = current;
+        }
     }
 }
