@@ -10,6 +10,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>00-example-module</module>
+        <module>31-Zatoka</module>
     </modules>
 
     <properties>
