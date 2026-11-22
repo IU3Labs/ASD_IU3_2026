@@ -1,9 +1,11 @@
 package ru.bmstu.lab2.bench;
 
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.function.LongSupplier;
+import ru.bmstu.lab2.hash.HashMapCustom;
 import ru.bmstu.lab2.heap.PriorityQueueCustom;
 
 /** воспроизводимые сравнения структур на одинаковых входных массивах */
@@ -21,6 +23,8 @@ public final class Benchmark {
             Integer[] data = new Random(123).ints(n).boxed().toArray(Integer[]::new);
             measure("PriorityQueueCustom", "add + poll", n, () -> heap(data, false));
             measure("PriorityQueue", "add + poll", n, () -> heap(data, true));
+            measure("HashMapCustom", "put + get + remove", n, () -> table(data, false));
+            measure("HashMap", "put + get + remove", n, () -> table(data, true));
             if (n == 100_000) {
                 measure("PriorityQueueCustom", "add", n, () -> build(data, false));
                 measure("PriorityQueueCustom", "heapify", n, () -> build(data, true));
@@ -59,6 +63,34 @@ public final class Benchmark {
             }
             while (!queue.isEmpty()) {
                 sum += queue.poll();
+            }
+        }
+        return sum;
+    }
+
+    private static long table(Integer[] data, boolean library) {
+        long sum = 0;
+        if (library) {
+            HashMap<Integer, Integer> map = new HashMap<>();
+            for (Integer value : data) {
+                map.put(value, value);
+            }
+            for (Integer value : data) {
+                sum += map.get(value);
+            }
+            for (Integer value : data) {
+                map.remove(value);
+            }
+        } else {
+            HashMapCustom<Integer, Integer> map = new HashMapCustom<>();
+            for (Integer value : data) {
+                map.put(value, value);
+            }
+            for (Integer value : data) {
+                sum += map.get(value);
+            }
+            for (Integer value : data) {
+                map.remove(value);
             }
         }
         return sum;
