@@ -1,5 +1,6 @@
 /*
- * ЛР2, задачи 2A и 2B. Хеш-таблица с линейным и квадратичным пробированием.
+ * ЛР2, задачи 2A, 2B и 2D. Хеш-таблица с открытой адресацией,
+ * линейным и квадратичным пробированием и настраиваемым порогом загрузки.
  */
 package ru.bmstu.lab2.task_2;
 
@@ -14,6 +15,7 @@ public final class HashMapCustom<K, V> {
     private static final Entry<?, ?> DELETED = new Entry<>(null, null, 0);
 
     private final Probing probing;
+    private final double loadFactor;
     private Entry<K, V>[] table = newTable(INITIAL_CAPACITY);
     private int size;
     private int deleted;
@@ -35,16 +37,26 @@ public final class HashMapCustom<K, V> {
     }
 
     /**
-     * Создаёт таблицу с заданным способом пробирования и порогом 0.75.
+     * Создаёт таблицу с линейным пробированием.
+     *
+     * @param loadFactor порог загрузки строго между нулём и единицей
+     */
+    public HashMapCustom(double loadFactor) {
+        this(Probing.LINEAR, loadFactor);
+    }
+
+    /**
+     * Создаёт таблицу с заданным способом пробирования и порогом загрузки.
      *
      * @param probing способ выбора следующей ячейки
-     * @param loadFactor порог загрузки 0.75
+     * @param loadFactor доля заполнения, при превышении которой таблица растёт
      */
     public HashMapCustom(Probing probing, double loadFactor) {
         this.probing = Objects.requireNonNull(probing, "Укажите способ пробирования");
-        if (loadFactor != DEFAULT_LOAD_FACTOR) {
-            throw new IllegalArgumentException("Для этой таблицы требуется порог 0.75");
+        if (!(loadFactor > 0.0 && loadFactor < 1.0)) {
+            throw new IllegalArgumentException("Порог загрузки должен быть строго между 0 и 1");
         }
+        this.loadFactor = loadFactor;
     }
 
     /**
@@ -168,13 +180,13 @@ public final class HashMapCustom<K, V> {
     private boolean prepareForInsert() {
         int capacity = table.length;
         int newCapacity = capacity;
-        while (size + 1 > newCapacity * DEFAULT_LOAD_FACTOR) {
+        while (size + 1 > newCapacity * loadFactor) {
             if (newCapacity == MAX_CAPACITY) {
                 throw new IllegalStateException("Достигнута предельная ёмкость таблицы");
             }
             newCapacity *= 2;
         }
-        if (newCapacity != capacity || deleted > capacity * (1 - DEFAULT_LOAD_FACTOR) / 2) {
+        if (newCapacity != capacity || deleted > capacity * (1 - loadFactor) / 2) {
             rehash(newCapacity);
             return true;
         }
