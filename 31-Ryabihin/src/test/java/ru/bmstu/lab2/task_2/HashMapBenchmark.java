@@ -11,7 +11,7 @@ import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import ru.bmstu.lab2.task_2.HashMapCustom.Probing;
 
-/** Воспроизводимые замеры для задач 2A–2C. */
+/** Воспроизводимые замеры для задач 2A–2D. */
 public final class HashMapBenchmark {
     private static final int[] SIZES = {10_000, 50_000, 100_000};
     private static final int QUERY_COUNT = 50_000;
@@ -33,10 +33,17 @@ public final class HashMapBenchmark {
         for (int size : SIZES) {
             Workload<Integer> workload = workload(pool, size);
             printTiming("jdk", workload, HashMapBenchmark::jdkMap);
-            printTiming("linear-0.75", workload, () -> customMap(Probing.LINEAR));
-            printTiming("quadratic-0.75", workload, () -> customMap(Probing.QUADRATIC));
+            printTiming(
+                    "linear-0.75", workload, () -> customMap(Probing.LINEAR, DEFAULT_LOAD_FACTOR));
+            printTiming(
+                    "quadratic-0.75",
+                    workload,
+                    () -> customMap(Probing.QUADRATIC, DEFAULT_LOAD_FACTOR));
         }
 
+        Workload<Integer> large = workload(pool, 100_000);
+        printTiming("linear-0.50", large, () -> customMap(Probing.LINEAR, 0.5));
+        printTiming("linear-0.90", large, () -> customMap(Probing.LINEAR, 0.9));
         Workload<Integer> medium = workload(pool, 50_000);
         printProbes(medium, Probing.LINEAR);
         printProbes(medium, Probing.QUADRATIC);
@@ -78,11 +85,11 @@ public final class HashMapBenchmark {
         printTiming(
                 "normal-strings",
                 new Workload<>(normal, normal, normal.length),
-                () -> customMap(Probing.LINEAR));
+                () -> customMap(Probing.LINEAR, DEFAULT_LOAD_FACTOR));
         printTiming(
                 "constant-hash",
                 new Workload<>(colliding, colliding, colliding.length),
-                () -> customMap(Probing.LINEAR));
+                () -> customMap(Probing.LINEAR, DEFAULT_LOAD_FACTOR));
     }
 
     private static void printProbes(Workload<Integer> workload, Probing probing) {
@@ -155,8 +162,8 @@ public final class HashMapBenchmark {
         return hits;
     }
 
-    private static <K> TimedMap<K> customMap(Probing probing) {
-        HashMapCustom<K, Integer> table = new HashMapCustom<>(probing, DEFAULT_LOAD_FACTOR);
+    private static <K> TimedMap<K> customMap(Probing probing, double loadFactor) {
+        HashMapCustom<K, Integer> table = new HashMapCustom<>(probing, loadFactor);
         return new TimedMap<>(table::put, table::get, table::capacity);
     }
 

@@ -138,6 +138,21 @@ class HashMapCustomTest {
 
     @ParameterizedTest
     @EnumSource(Probing.class)
+    void shouldRespectCustomLoadFactors(Probing probing) {
+        HashMapCustom<Integer, Integer> lower = new HashMapCustom<>(probing, 0.5);
+        HashMapCustom<Integer, Integer> higher = new HashMapCustom<>(probing, 0.9);
+        int initialCapacity = lower.capacity();
+        for (int key = 0; key < 13; key++) {
+            lower.put(key, key);
+            higher.put(key, key);
+        }
+
+        assertEquals(2 * initialCapacity, lower.capacity());
+        assertEquals(initialCapacity, higher.capacity());
+    }
+
+    @ParameterizedTest
+    @EnumSource(Probing.class)
     void shouldKeepLiveKeysDuringRepeatedInsertionsAndRemovals(Probing probing) {
         HashMapCustom<Integer, Integer> table = new HashMapCustom<>(probing, DEFAULT_LOAD_FACTOR);
         int capacity = table.capacity();
@@ -211,6 +226,13 @@ class HashMapCustomTest {
         assertEquals(16, table.capacity());
         table.put(11, 11);
         assertEquals(32, table.capacity());
+    }
+
+    @Test
+    void shouldRejectInvalidLoadFactors() {
+        assertThrows(IllegalArgumentException.class, () -> new HashMapCustom<>(0));
+        assertThrows(IllegalArgumentException.class, () -> new HashMapCustom<>(1));
+        assertThrows(IllegalArgumentException.class, () -> new HashMapCustom<>(Double.NaN));
     }
 
     @Test
