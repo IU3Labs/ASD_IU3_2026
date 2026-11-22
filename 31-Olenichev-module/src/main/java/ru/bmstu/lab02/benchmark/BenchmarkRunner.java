@@ -9,7 +9,7 @@ public final class BenchmarkRunner {
     }
 
     /**
-     * Запускает все доступные бенчмарки.
+     * Запускает все доступные бенчмарки по задачам 1A, 1B, 1C и 1D.
      *
      * @param args аргументы командной строки
      */
@@ -17,5 +17,6 @@ public final class BenchmarkRunner {
         Task1ABenchmark.run();
         Task1BBenchmark.run();
         Task1CBenchmark.run();
+        Task1DBenchmark.run();
     }
 }
